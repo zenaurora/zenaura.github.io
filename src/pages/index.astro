@@ -7,12 +7,9 @@ import Layout from "@/layouts/Layout.astro"
   <MetaPage slot="head" />
   <dictionary-entry class="fade-in">
     <header class="entry-header">
-      <div class="title-row">
-        <h1>mao·kai·he</h1>
-        <span class="cursor" aria-hidden="true"></span>
-      </div>
+      <h1>mao·kai·he</h1>
       <etymology-span>
-        <span class="part-of-speech">dlut student</span>
+        <span class="part-of-speech">dut grad student</span>
       </etymology-span>
     </header>
 
@@ -30,7 +27,7 @@ import Layout from "@/layouts/Layout.astro"
         I mostly write <strong>Rust</strong>, <strong>TypeScript</strong>, and <strong>Python</strong> these days. Switched from Windows to macOS and Linux a while back, and I probably spend too much time configuring my tools instead of actually using them.
       </p>
       <p>
-        My lab work is mostly industry projects, which means a lot of Java and enterprise stuff. But I still read AI papers now and then — NeurIPS, CVPR, ICLR. Not because I have to, just because it's interesting even when the math goes over my head.
+        My lab work is mostly industry projects, which means a lot of Java and enterprise stuff. But I still read AI papers now and then: NeurIPS, CVPR, ICLR. Not because I have to, just because it's interesting even when the math goes over my head.
       </p>
       <p>
         I try to keep up with the Rust community. RFCs, edition updates, that sort of thing.
@@ -45,42 +42,45 @@ import Layout from "@/layouts/Layout.astro"
     </prose-content>
 
 
-      <article class="activity-card activity-card--panel">
-        <div class="activity-heading">
-          <span>signal</span>
-          <span class="activity-note">last 365 days</span>
-        </div>
-        <div class="activity-meta">
-          <span>steady output</span>
-          <span>open source + notes</span>
-        </div>
-        <div class="activity-cells activity-cells--panel" data-github-activity aria-hidden="true">
-          {Array.from({ length: 84 }, () => <i style="--level: 0" />)}
-        </div>
-        <div class="activity-legend activity-legend--panel" aria-hidden="true">
-          <span>less</span>
-          {[0, 1, 2, 3, 4].map((level) => <i style={`--level: ${level}`} />)}
-          <span>more</span>
-        </div>
-      </article>
-    </section>
+    <article class="activity-card">
+      <div class="activity-heading">
+        <span>github activity</span>
+        <span class="activity-note">last 365 days</span>
+      </div>
+      <div class="activity-cells" data-github-activity aria-hidden="true">
+        {Array.from({ length: 84 }, () => <i style="--level: 0" />)}
+      </div>
+      <div class="activity-legend" aria-hidden="true">
+        <span>less</span>
+        {[0, 1, 2, 3, 4].map((level) => <i style={`--level: ${level}`} />)}
+        <span>more</span>
+      </div>
+      <p class="activity-fallback">couldn't load github activity.</p>
+    </article>
   </dictionary-entry>
 </Layout>
 
 <style>
-  /* 整体淡入与位移过渡效果 */
-  .fade-in {
-    animation: entryFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  /* 逐段级联入场：位移 + 透明度 + 模糊消散，每块内容错开一拍 */
+  .fade-in > * {
+    animation: entryFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
+
+  .fade-in > *:nth-child(2) { animation-delay: 0.08s; }
+  .fade-in > *:nth-child(3) { animation-delay: 0.16s; }
+  .fade-in > *:nth-child(4) { animation-delay: 0.24s; }
+  .fade-in > *:nth-child(5) { animation-delay: 0.32s; }
 
   @keyframes entryFadeIn {
     from {
       opacity: 0;
-      transform: translateY(12px);
+      transform: translateY(16px);
+      filter: blur(6px);
     }
     to {
       opacity: 1;
       transform: translateY(0);
+      filter: blur(0);
     }
   }
 
@@ -91,12 +91,6 @@ import Layout from "@/layouts/Layout.astro"
 
     @media (width >= 64rem) {
       margin-block-start: -0.2em;
-    }
-
-    .title-row {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3xs);
     }
 
     etymology-span {
@@ -110,11 +104,12 @@ import Layout from "@/layouts/Layout.astro"
     }
 
     h1 {
-      font-size: var(--step-2);
-      line-height: calc(var(--leading-offset) + 1em);
-      font-weight: var(--font-weight-medium);
+      font-size: clamp(2.5rem, 1.9rem + 2.8vw, 3.75rem);
+      line-height: 1.04;
+      font-weight: 550;
+      letter-spacing: -0.03em;
       color: var(--foreground);
-      margin-block-end: var(--space-3xs);
+      margin-block-end: var(--space-2xs);
     }
 
     ol {
@@ -195,32 +190,27 @@ import Layout from "@/layouts/Layout.astro"
     }
   }
 
-  .activity-compare {
-    display: grid;
-    gap: var(--space-l);
-    margin-block-start: var(--space-xl);
-  }
-
   .activity-card {
     display: block;
-    padding-block-start: var(--space-s);
-    border-block-start: 1px solid var(--border);
-  }
-
-  .activity-card--textured {
-    padding-block-start: var(--space-m);
-  }
-
-  .activity-card--panel {
+    margin-block-start: var(--space-xl);
     padding: var(--space-s);
     border: 1px solid var(--border);
     border-radius: 14px;
-    background: color-mix(in oklab, var(--foreground) 2.5%, transparent);
+    /* 双层质感：顶部发丝高光 + 上深下浅的表面渐变，两套明暗都成立 */
+    background: linear-gradient(
+      color-mix(in oklab, var(--foreground) 3.5%, transparent),
+      color-mix(in oklab, var(--foreground) 1.5%, transparent)
+    );
+    box-shadow: inset 0 1px 0 color-mix(in oklab, var(--foreground) 7%, transparent);
+    transition: border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &:hover {
+      border-color: color-mix(in oklab, var(--foreground) 22%, transparent);
+    }
   }
 
   .activity-heading,
-  .activity-legend,
-  .activity-meta {
+  .activity-legend {
     display: flex;
     align-items: center;
     color: var(--muted-foreground);
@@ -238,67 +228,29 @@ import Layout from "@/layouts/Layout.astro"
     letter-spacing: 0.01em;
   }
 
-  .activity-note,
-  .activity-caption,
-  .activity-meta {
+  .activity-note {
     opacity: 0.72;
-  }
-
-  .activity-meta {
-    justify-content: space-between;
-    margin-block-end: var(--space-3xs);
-    font-size: 0.72em;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .activity-caption {
-    max-inline-size: 38ch;
-    margin-block-start: var(--space-xs);
-    font-size: var(--step--1);
-    line-height: 1.5;
   }
 
   .activity-cells {
     display: grid;
     grid-template-rows: repeat(6, 1fr);
     grid-auto-flow: column;
-    gap: 4px;
-    overflow: hidden;
-  }
-
-  .activity-cells--minimal {
-    gap: 4px;
-  }
-
-  .activity-cells--textured {
-    gap: 5px;
-    padding-block: 2px;
-  }
-
-  .activity-cells--panel {
     gap: 3px;
+    overflow: hidden;
   }
 
   .activity-cells i,
   .activity-legend i {
     display: block;
     aspect-ratio: 1;
-    border-radius: 3px;
+    border-radius: 2px;
     background: color-mix(in oklab, var(--foreground) calc(8% + var(--level) * 16%), transparent);
   }
 
   .activity-cells i {
     min-inline-size: 8px;
     transition: transform 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
-  }
-
-  .activity-card--textured .activity-cells i {
-    border-radius: 999px;
-  }
-
-  .activity-card--panel .activity-cells i {
-    border-radius: 2px;
   }
 
   .activity-cells i:hover {
@@ -310,7 +262,7 @@ import Layout from "@/layouts/Layout.astro"
   .activity-legend {
     justify-content: flex-end;
     gap: 4px;
-    margin-block-start: var(--space-3xs);
+    margin-block-start: var(--space-xs);
     font-size: 0.7em;
   }
 
@@ -318,23 +270,27 @@ import Layout from "@/layouts/Layout.astro"
     inline-size: 8px;
   }
 
-  .activity-legend--panel {
-    margin-block-start: var(--space-xs);
+  /* 请求失败时隐藏格子，只留一句说明 */
+  .activity-fallback {
+    display: none;
+    margin-block-start: var(--space-3xs);
+    font-size: var(--step--1);
+    color: var(--muted-foreground);
   }
 
-  .cursor {
-    display: inline-block;
-    inline-size: 0.45em;
-    block-size: 0.45em;
-    margin-inline-start: var(--space-3xs);
-    border-radius: 50%;
-    background: var(--foreground);
-    opacity: 0.72;
-    box-shadow: 0 0 0 0.3em color-mix(in oklab, var(--foreground) 9%, transparent);
+  .activity-card[data-unavailable] {
+    .activity-cells,
+    .activity-legend {
+      display: none;
+    }
+
+    .activity-fallback {
+      display: block;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .fade-in {
+    .fade-in > * {
       animation: none;
     }
   }
