@@ -1,0 +1,186 @@
+---
+import MetaPage from "@/components/MetaPage.astro"
+import ScrollToTop from "@/components/ScrollToTop.astro"
+import TableOfContents from "@/components/TableOfContents.astro"
+import Layout from "@/layouts/Layout.astro"
+import { dailyTopic, getDailies } from "@/lib/content"
+import { render, type CollectionEntry } from "astro:content"
+
+export async function getStaticPaths() {
+  const dailies = await getDailies()
+  return dailies.map((entry, i) => ({
+    params: { id: entry.id },
+    props: { entry, prev: dailies[i + 1], next: dailies[i - 1] },
+  }))
+}
+
+type Props = {
+  entry: CollectionEntry<"daily">
+  prev?: CollectionEntry<"daily">
+  next?: CollectionEntry<"daily">
+}
+
+const { entry, prev, next } = Astro.props
+const { Content, headings } = await render(entry)
+const meta = dailyTopic(entry.data.topic)
+const dateKey = entry.data.date.toISOString().slice(0, 10)
+const weekday = new Intl.DateTimeFormat("zh-CN", {
+  weekday: "long",
+  timeZone: "UTC",
+}).format(entry.data.date)
+
+const sections = [
+  {
+    id: undefined,
+    label: entry.data.title,
+    open: true,
+    headings: headings.filter(
+      ({ depth, text }) => depth >= 2 && depth <= 4 && text.trim(),
+    ),
+  },
+]
+const hasToc = sections[0].headings.length > 0
+
+const crumbs = [
+  { label: "日报", href: "/daily" },
+  { label: entry.data.title, href: `/daily/${entry.id}` },
+]
+---
+
+<Layout crumbs={crumbs}>
+  <MetaPage
+    slot="head"
+    title={entry.data.title}
+    description={entry.data.description}
+  />
+  {hasToc && (
+      <TableOfContents slot="toc" title={entry.data.title} sections={sections} />
+    )}
+  <ScrollToTop floating />
+
+  <article style={`--accent: ${meta.accent}`}>
+    <header>
+      <daily-meta>
+        <topic-badge>{meta.label}</topic-badge>
+        <time datetime={entry.data.date.toISOString()}>{dateKey} · {weekday}</time>
+        {entry.data.sourceCount && (
+          <span>筛选自 {entry.data.sourceCount} 条资讯</span>
+        )}
+      </daily-meta>
+      <h1>{entry.data.title}</h1>
+    </header>
+    <prose-content>
+      <Content />
+    </prose-content>
+  </article>
+
+  <daily-nav>
+    {prev ? (
+      <a href={`/daily/${prev.id}`} rel="prev">
+        <small>较早一期</small>
+        <span>{prev.data.title}</span>
+      </a>
+    ) : <i />}
+    {next ? (
+      <a href={`/daily/${next.id}`} rel="next" data-dir="next">
+        <small>较新一期</small>
+        <span>{next.data.title}</span>
+      </a>
+    ) : <i />}
+  </daily-nav>
+</Layout>
+
+<style>
+  article {
+    --accent: var(--foreground);
+  }
+
+  header {
+    margin-block-end: var(--space-m);
+    padding-block-end: var(--space-m);
+    border-block-end: 1px solid var(--border);
+
+    daily-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2xs);
+      margin-block-end: var(--space-2xs);
+      font-size: var(--step--1);
+      color: var(--muted-foreground);
+
+      topic-badge {
+        display: inline-block;
+        padding: 0.1em 0.6em;
+        border-radius: var(--radius-full);
+        font-size: var(--step--2, 0.75rem);
+        letter-spacing: 0.04em;
+        color: color-mix(in oklab, var(--accent) 70%, var(--foreground));
+        background: color-mix(in oklab, var(--accent) 14%, transparent);
+        border: 1px solid color-mix(in oklab, var(--accent) 30%, transparent);
+      }
+
+      time,
+      span {
+        font-variant-numeric: tabular-nums;
+      }
+
+      topic-badge ~ time::before,
+      time ~ span::before {
+        content: "·";
+        margin-inline-end: var(--space-3xs);
+      }
+    }
+
+    h1 {
+      font-size: var(--step-3);
+      line-height: calc(var(--leading-offset) + 1em);
+      font-weight: var(--font-weight-medium);
+    }
+  }
+
+  daily-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-s);
+    margin-block-start: var(--space-xl);
+
+    a {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3xs);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg, 0.75rem);
+      padding: var(--space-xs) var(--space-s);
+      background: color-mix(in oklab, var(--foreground) 3%, transparent);
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+
+      &:hover {
+        border-color: color-mix(in oklab, var(--foreground) 25%, var(--border));
+        background: color-mix(in oklab, var(--foreground) 6%, transparent);
+      }
+
+      &[data-dir="next"] {
+        text-align: end;
+      }
+
+      small {
+        font-size: var(--step--2, 0.75rem);
+        color: var(--muted-foreground);
+      }
+
+      span {
+        font-size: var(--step--1);
+        font-weight: var(--font-weight-medium);
+      }
+    }
+
+    @media (width < 40rem) {
+      grid-template-columns: 1fr;
+
+      a[data-dir="next"] {
+        text-align: start;
+      }
+    }
+  }
+</style>

@@ -11,6 +11,27 @@ export async function getPosts(): Promise<CollectionEntry<"blog">[]> {
     .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
 }
 
+export async function getDailies(): Promise<CollectionEntry<"daily">[]> {
+  const dailies = await getCollection("daily")
+  return dailies.sort(
+    (a, b) =>
+      b.data.date.getTime() - a.data.date.getTime() ||
+      a.data.topic.localeCompare(b.data.topic),
+  )
+}
+
+/** 日报话题的展示文案与强调色（oklch 固定色相，配合 color-mix 适配各主题） */
+export const DAILY_TOPICS: Record<
+  string,
+  { label: string; accent: string }
+> = {
+  rust: { label: "Rust", accent: "oklch(68% 0.15 45)" },
+  racing: { label: "赛车", accent: "oklch(62% 0.19 20)" },
+}
+
+export const dailyTopic = (topic: string) =>
+  DAILY_TOPICS[topic] ?? { label: topic, accent: "oklch(65% 0.1 260)" }
+
 export async function getSubposts(): Promise<
   Map<string, CollectionEntry<"blog">[]>
 > {

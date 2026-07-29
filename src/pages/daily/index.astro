@@ -1,0 +1,381 @@
+---
+import MetaPage from "@/components/MetaPage.astro"
+import Layout from "@/layouts/Layout.astro"
+import { DAILY_TOPICS, dailyTopic, getDailies } from "@/lib/content"
+
+const dailies = await getDailies()
+
+// 按日期分组的时间线
+const groups = new Map<string, typeof dailies>()
+for (const entry of dailies) {
+  const key = entry.data.date.toISOString().slice(0, 10)
+  const group = groups.get(key)
+  if (group) group.push(entry)
+  else groups.set(key, [entry])
+}
+
+const weekday = (date: Date) =>
+  new Intl.DateTimeFormat("zh-CN", { weekday: "long", timeZone: "UTC" }).format(
+    date,
+  )
+
+// 只展示实际出现过的话题
+const activeTopics = [...new Set(dailies.map((d) => d.data.topic))].sort()
+const totalCount = dailies.length
+---
+
+<Layout>
+  <MetaPage
+    slot="head"
+    title="日报"
+    description="由 newsbrief 自动采集整理的 Rust 与赛车圈每日资讯摘要。"
+  />
+
+  <daily-hero>
+    <h1>日报</h1>
+    <p>每天自动采集 RSS 源，筛选去重后由模型整理成中文摘要，不点链接也能知道发生了什么。</p>
+  </daily-hero>
+
+  <daily-filter role="tablist" aria-label="按话题筛选">
+    <button data-filter="all" aria-pressed="true">
+      全部<sup>{totalCount}</sup>
+    </button>
+    {activeTopics.map((topic) => {
+      const meta = dailyTopic(topic)
+      const count = dailies.filter((d) => d.data.topic === topic).length
+      return (
+        <button
+          data-filter={topic}
+          aria-pressed="false"
+          style={`--accent: ${meta.accent}`}
+        >
+          {meta.label}<sup>{count}</sup>
+        </button>
+      )
+    })}
+  </daily-filter>
+
+  <daily-timeline>
+    {[...groups.entries()].map(([key, entries], gi) => (
+      <daily-day
+        data-topics={entries.map((e) => e.data.topic).join(" ")}
+        style={`--stagger: ${Math.min(gi, 6)}`}
+      >
+        <day-marker aria-hidden="true">
+          <day-dot />
+        </day-marker>
+        <day-date>
+          <strong>{key.slice(5).replace("-", " / ")}</strong>
+          <span>{key.slice(0, 4)} · {weekday(entries[0].data.date)}</span>
+        </day-date>
+        <day-entries>
+          {entries.map((entry) => {
+            const meta = dailyTopic(entry.data.topic)
+            return (
+              <a
+                href={`/daily/${entry.id}`}
+                data-topic={entry.data.topic}
+                style={`--accent: ${meta.accent}`}
+              >
+                <entry-head>
+                  <topic-badge>{meta.label}</topic-badge>
+                  {entry.data.sourceCount && (
+                    <entry-sources>筛选自 {entry.data.sourceCount} 条资讯</entry-sources>
+                  )}
+                </entry-head>
+                <h2>{entry.data.title}</h2>
+                <p>{entry.data.description}</p>
+              </a>
+            )
+          })}
+        </day-entries>
+      </daily-day>
+    ))}
+  </daily-timeline>
+
+  {dailies.length === 0 && <p>还没有日报，先运行 newsbrief 的 publish:blog。</p>}
+</Layout>
+
+<script>
+  const filterBar = document.querySelector("daily-filter")
+  filterBar?.addEventListener("click", (e) => {
+    const button = (e.target as HTMLElement).closest("button")
+    if (!button) return
+    const filter = button.dataset.filter ?? "all"
+    for (const b of filterBar.querySelectorAll("button")) {
+      b.setAttribute("aria-pressed", String(b === button))
+    }
+    for (const card of document.querySelectorAll<HTMLElement>(
+      "day-entries a[data-topic]",
+    )) {
+      card.hidden = filter !== "all" && card.dataset.topic !== filter
+    }
+    // 当天没有可见条目时隐藏整个日期节点
+    for (const day of document.querySelectorAll<HTMLElement>("daily-day")) {
+      const topics = (day.dataset.topics ?? "").split(" ")
+      day.hidden = filter !== "all" && !topics.includes(filter)
+    }
+  })
+</script>
+
+<style>
+  daily-hero {
+    display: block;
+    margin-block-end: var(--space-m);
+
+    h1 {
+      font-size: var(--step-3);
+      line-height: calc(var(--leading-offset) + 1em);
+      font-weight: var(--font-weight-medium);
+    }
+
+    p {
+      margin-block-start: var(--space-2xs);
+      max-inline-size: 36rem;
+      font-size: var(--step--1);
+      color: var(--muted-foreground);
+    }
+  }
+
+  daily-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    margin-block-end: var(--space-l);
+
+    button {
+      --accent: var(--foreground);
+
+      appearance: none;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 0.3em 0.9em;
+      font: inherit;
+      font-size: var(--step--1);
+      color: var(--muted-foreground);
+      background: color-mix(in oklab, var(--foreground) 3%, transparent);
+      transition:
+        color 0.2s ease,
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+
+      sup {
+        margin-inline-start: 0.4em;
+        font-size: 0.72em;
+        font-variant-numeric: tabular-nums;
+        opacity: 0.75;
+      }
+
+      &:hover {
+        color: var(--foreground);
+        border-color: color-mix(in oklab, var(--accent) 45%, var(--border));
+      }
+
+      &[aria-pressed="true"] {
+        color: var(--foreground);
+        border-color: color-mix(in oklab, var(--accent) 55%, var(--border));
+        background: color-mix(in oklab, var(--accent) 12%, transparent);
+      }
+    }
+  }
+
+  daily-timeline {
+    display: flex;
+    flex-direction: column;
+  }
+
+  daily-day {
+    --rail: 0.875rem;
+
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--rail) 1fr;
+    column-gap: var(--space-s);
+    padding-block-end: var(--space-xl);
+
+    /* 时间线纵轴 */
+    &::before {
+      content: "";
+      position: absolute;
+      inset-block: 0.5rem 0;
+      inset-inline-start: calc(var(--rail) / 2 - 0.5px);
+      inline-size: 1px;
+      background: linear-gradient(
+        to bottom,
+        var(--border),
+        color-mix(in oklab, var(--border) 40%, transparent)
+      );
+    }
+
+    &:last-child {
+      padding-block-end: 0;
+
+      &::before {
+        inset-block-end: auto;
+        block-size: 100%;
+        mask-image: linear-gradient(to bottom, black 30%, transparent);
+      }
+    }
+  }
+
+  day-marker {
+    position: relative;
+    display: block;
+
+    day-dot {
+      position: absolute;
+      inset-block-start: 0.4rem;
+      inset-inline-start: calc(var(--rail) / 2 - 0.3125rem);
+      display: block;
+      inline-size: 0.625rem;
+      block-size: 0.625rem;
+      border-radius: var(--radius-full);
+      border: 1.5px solid var(--muted-foreground);
+      background: var(--background);
+    }
+  }
+
+  day-date {
+    grid-column: 2;
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2xs);
+    margin-block-end: var(--space-s);
+
+    strong {
+      font-size: var(--step-1);
+      font-weight: var(--font-weight-medium);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+    }
+
+    span {
+      font-size: var(--step--1);
+      color: var(--muted-foreground);
+    }
+  }
+
+  day-entries {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-s);
+
+    /* 双色层次卡片：内侧高光 + 顶部话题色渐变细线 */
+    a {
+      --accent: var(--foreground);
+
+      position: relative;
+      display: block;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg, 0.75rem);
+      padding: var(--space-s) var(--space-s-m);
+      background:
+        linear-gradient(
+          to bottom,
+          color-mix(in oklab, var(--foreground) 4.5%, transparent),
+          color-mix(in oklab, var(--foreground) 1.5%, transparent)
+        );
+      box-shadow: inset 0 1px 0 color-mix(in oklab, var(--background) 60%, transparent);
+      overflow: hidden;
+      transition:
+        border-color 0.25s ease,
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset-block-start: 0;
+        inset-inline: 0;
+        block-size: 2px;
+        background: linear-gradient(
+          to right,
+          color-mix(in oklab, var(--accent) 75%, transparent),
+          transparent 65%
+        );
+      }
+
+      &:hover {
+        border-color: color-mix(in oklab, var(--accent) 40%, var(--border));
+        transform: translateY(-2px);
+        box-shadow:
+          inset 0 1px 0 color-mix(in oklab, var(--background) 60%, transparent),
+          0 8px 24px -12px color-mix(in oklab, var(--accent) 35%, transparent);
+      }
+
+      entry-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-2xs);
+        margin-block-end: var(--space-3xs);
+      }
+
+      topic-badge {
+        display: inline-block;
+        padding: 0.1em 0.6em;
+        border-radius: var(--radius-full);
+        font-size: var(--step--2, 0.75rem);
+        letter-spacing: 0.04em;
+        color: color-mix(in oklab, var(--accent) 70%, var(--foreground));
+        background: color-mix(in oklab, var(--accent) 14%, transparent);
+        border: 1px solid color-mix(in oklab, var(--accent) 30%, transparent);
+      }
+
+      entry-sources {
+        font-size: var(--step--2, 0.75rem);
+        color: var(--muted-foreground);
+        font-variant-numeric: tabular-nums;
+      }
+
+      h2 {
+        font-size: var(--step-1);
+        line-height: calc(var(--leading-offset) + 1em);
+        font-weight: var(--font-weight-medium);
+      }
+
+      p {
+        margin-block-start: var(--space-3xs);
+        font-size: var(--step--1);
+        color: var(--muted-foreground);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+    }
+  }
+
+  /* 分层入场动画，尊重减少动态偏好 */
+  @media (prefers-reduced-motion: no-preference) {
+    daily-day {
+      animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: calc(var(--stagger, 0) * 60ms);
+    }
+
+    @keyframes rise-in {
+      from {
+        opacity: 0;
+        transform: translateY(0.75rem);
+      }
+    }
+  }
+
+  @media (width < 40rem) {
+    daily-day {
+      grid-template-columns: 1fr;
+
+      &::before,
+      day-marker {
+        display: none;
+      }
+
+      day-date,
+      day-entries {
+        grid-column: 1;
+      }
+    }
+  }
+</style>

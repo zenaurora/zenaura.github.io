@@ -35,6 +35,20 @@ const blog = defineCollection({
     }),
 })
 
+const daily = defineCollection({
+  loader: glob({
+    pattern: "**/[^_]*.md",
+    base: "./src/content/daily",
+  }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    date: z.coerce.date(),
+    topic: z.string(),
+    sourceCount: z.number().optional(),
+  }),
+})
+
 const projects = defineCollection({
   loader: glob({
     pattern: "**/[^_]*.md",
@@ -52,4 +66,4 @@ const projects = defineCollection({
     }),
 })
 
-export const collections = { blog, authors, projects }
+export const collections = { blog, authors, projects, daily }
