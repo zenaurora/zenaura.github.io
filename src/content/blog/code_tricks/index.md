@@ -2,6 +2,7 @@
 title: "Code Tricks"
 description: "平时读源码和博客时遇到的一些小而妙的代码技巧合集"
 date: 2026-07-22
+image: ./assets/banner.jpg
 authors:
   - maokaihe
 tags:
