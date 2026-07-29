@@ -15,6 +15,8 @@ export default defineConfig({
   base: "/",
   site: "https://zenaurora.github.io/",
   output: "static",
+  // astro 7 默认 compressHTML: 'jsx' 会吃掉内联元素间空格，恢复 HTML 语义压缩（同上游 da49805）
+  compressHTML: true,
   prefetch: { prefetchAll: true },
   integrations: [
     sitemap({

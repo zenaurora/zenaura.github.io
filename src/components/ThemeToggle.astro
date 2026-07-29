@@ -238,19 +238,18 @@
       })
     }
 
-    function openDropdown() {
+    // 箭头函数常量：函数声明会被提升，TS 不会把上面的 null 守卫收窄传进去
+    const openDropdown = () => {
       dropdown.setAttribute("data-open", "")
       toggle.setAttribute("aria-expanded", "true")
     }
 
-    function closeDropdown() {
+    const closeDropdown = () => {
       dropdown.removeAttribute("data-open")
       toggle.setAttribute("aria-expanded", "false")
     }
 
-    function isOpen() {
-      return dropdown.hasAttribute("data-open")
-    }
+    const isOpen = () => dropdown.hasAttribute("data-open")
 
     toggle.addEventListener("click", (e) => {
       e.stopPropagation()

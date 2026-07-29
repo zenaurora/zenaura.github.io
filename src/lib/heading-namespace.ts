@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url"
 import GithubSlugger from "github-slugger"
 import { defineHastPlugin } from "satteri"
 
@@ -10,7 +11,9 @@ export function headingNamespace() {
     element: {
       filter: ["h1", "h2", "h3", "h4", "h5", "h6"],
       visit(node, ctx) {
-        const match = SUBPOST.exec(ctx.filename)
+        // satteri 新版用 ctx.fileURL 替代了 ctx.filename（同上游 astro 7 适配）
+        const path = ctx.fileURL ? fileURLToPath(ctx.fileURL) : ""
+        const match = SUBPOST.exec(path)
         if (!match) return
         ctx.setProperty(
           node,
