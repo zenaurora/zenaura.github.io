@@ -7,7 +7,6 @@ authors:
 tags:
   - Rust
   - Design Patterns
-draft: true
 ---
 
 ## 引言
