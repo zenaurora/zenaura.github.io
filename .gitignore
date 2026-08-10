@@ -1,4 +1,5 @@
 dist/
+.obsidian/
 .astro/
 node_modules/
 npm-debug.log*
