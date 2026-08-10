@@ -139,6 +139,96 @@
   color-scheme: dark;
 }
 
+/* Dracula Theme */
+:root[data-theme="dracula"] {
+  --background: #282a36;
+  --foreground: #f8f8f2;
+  --primary: #bd93f9;
+  --primary-foreground: #282a36;
+  --muted: #44475a;
+  --muted-foreground: #6272a4;
+  --destructive: #ff5555;
+  --border: #44475a;
+  --ring: #bd93f9;
+
+  color-scheme: dark;
+}
+
+/* Tokyo Night Theme */
+:root[data-theme="tokyo-night"] {
+  --background: #1a1b26;
+  --foreground: #c0caf5;
+  --primary: #7aa2f7;
+  --primary-foreground: #1a1b26;
+  --muted: #2f3549;
+  --muted-foreground: #9aa5ce;
+  --destructive: #f7768e;
+  --border: #2f3549;
+  --ring: #7aa2f7;
+
+  color-scheme: dark;
+}
+
+/* Rosé Pine Moon Theme */
+:root[data-theme="rose-pine"] {
+  --background: #232136;
+  --foreground: #e0def4;
+  --primary: #c4a7e7;
+  --primary-foreground: #232136;
+  --muted: #2a273f;
+  --muted-foreground: #908caa;
+  --destructive: #eb6f92;
+  --border: #393552;
+  --ring: #c4a7e7;
+
+  color-scheme: dark;
+}
+
+/* Synthwave '84 Theme */
+:root[data-theme="synthwave"] {
+  --background: #262335;
+  --foreground: #ffffff;
+  --primary: #ff7edb;
+  --primary-foreground: #262335;
+  --muted: #2a2139;
+  --muted-foreground: #b895eb;
+  --destructive: #f97e72;
+  --border: #495495;
+  --ring: #ff7edb;
+
+  color-scheme: dark;
+}
+
+/* Solarized Light Theme */
+:root[data-theme="solarized-light"] {
+  --background: #fdf6e3;
+  --foreground: #586e75;
+  --primary: #268bd2;
+  --primary-foreground: #fdf6e3;
+  --muted: #eee8d5;
+  --muted-foreground: #93a1a1;
+  --destructive: #dc322f;
+  --border: #d9d2b8;
+  --ring: #268bd2;
+
+  color-scheme: light;
+}
+
+/* Monokai Theme */
+:root[data-theme="monokai"] {
+  --background: #272822;
+  --foreground: #f8f8f2;
+  --primary: #a6e22e;
+  --primary-foreground: #272822;
+  --muted: #3e3d32;
+  --muted-foreground: #75715e;
+  --destructive: #f92672;
+  --border: #3e3d32;
+  --ring: #a6e22e;
+
+  color-scheme: dark;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);

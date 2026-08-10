@@ -2,6 +2,7 @@
 import sansWoff2 from "@/assets/fonts/IBMPlexSans-VariableFont_wdth,wght.woff2?url"
 import sansItalicWoff2 from "@/assets/fonts/IBMPlexSans-Italic-VariableFont_wdth,wght.woff2?url"
 import { SITE } from "@/consts"
+import { LIGHT_THEMES, DARK_THEMES } from "@/lib/expressive-code/config"
 ---
 
 <head>
@@ -58,7 +59,7 @@ import { SITE } from "@/consts"
 
   <script is:inline>
     const theme = localStorage.theme
-    const validThemes = ["light", "dark", "gruvbox-dark", "everforest", "nord", "blackgold", "catppuccin"]
+    const validThemes = [...LIGHT_THEMES, ...DARK_THEMES]
     if (validThemes.includes(theme))
       document.documentElement.dataset.theme = theme
   </script>

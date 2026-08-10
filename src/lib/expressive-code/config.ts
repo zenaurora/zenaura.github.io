@@ -5,11 +5,28 @@ import {
   type SatteriExpressiveCodeOptions,
 } from "satteri-expressive-code"
 
+export const LIGHT_THEMES = ["light", "solarized-light"]
+export const DARK_THEMES = [
+  "dark",
+  "gruvbox-dark",
+  "everforest",
+  "nord",
+  "blackgold",
+  "catppuccin",
+  "dracula",
+  "tokyo-night",
+  "rose-pine",
+  "synthwave",
+  "monokai",
+]
+
 export const ecOptions: SatteriExpressiveCodeOptions = {
   themes: ["github-light", "github-dark"],
   useDarkModeMediaQuery: true,
-  themeCssSelector: (theme) =>
-    `[data-theme="${theme.name === "github-dark" ? "dark" : "light"}"]`,
+  themeCssSelector: (theme) => {
+    const names = theme.name === "github-light" ? LIGHT_THEMES : DARK_THEMES
+    return names.map((n) => `[data-theme="${n}"]`).join(", ")
+  },
   plugins: [pluginCollapsibleSections(), pluginLineNumbers()],
   defaultProps: {
     wrap: true,
