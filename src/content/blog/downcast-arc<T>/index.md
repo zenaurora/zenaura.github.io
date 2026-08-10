@@ -1,3 +1,17 @@
+---
+title: "把`Arc<Trait>`向下转型为`Arc<Struct>`"
+description: "如何把一个包含动态类型的Arc高效地downcast回它原本的类型，通过unsafe和裸指针实现，并利用std::hint::assert_unchecked优化性能。"
+date: 2026-08-09
+authors:
+  - maokaihe
+tags:
+  - Rust
+  - unsafe
+  - Arc
+  - downcast
+  - performance
+---
+
 # 把`Arc<Trait>`向下转型为`Arc<Struct>`
 
 读了一个新的博客，讲的是如何把一个包含动态类型的高效地downcast回到它原本的类型
@@ -10,7 +24,7 @@ Rust 里面，`Arc<T>` 有一个`into_inner`的方法，如果这个Arc的引用
 
 但是`into_inner`只能用于编译期已知大小的`Sized`的类型。对于`dyn MyTrait`类型是不可以的。
 
-如果完全确定这个`Arc<dyn MyTrait>` 底层就是 `MyStruct` 还想要给他解包出来，就需要使用donwcast来向下转型。
+如果完全确定这个`Arc<dyn MyTrait>` 底层就是 `MyStruct` 还想要给他解包出来，就需要使用downcast来向下转型。
 
 ## 第一版
 
@@ -96,3 +110,10 @@ pub unsafe fn downcast_with_hint(arc: Arc<dyn MyTrait>) -> Arc<MyStruct> {
 }
 ```
 
+这个代码对应的汇编：
+```
+downcast_with_hint:
+        ; Copy the input pointer into the output register
+        mov     rax, rdi
+        ret
+```
