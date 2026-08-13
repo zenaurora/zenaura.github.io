@@ -11,6 +11,11 @@ export async function getPosts(): Promise<CollectionEntry<"blog">[]> {
     .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
 }
 
+export async function getPapers(): Promise<CollectionEntry<"papers">[]> {
+  const papers = await getCollection("papers", ({ data }) => !data.draft)
+  return papers.sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+}
+
 export async function getDailies(): Promise<CollectionEntry<"daily">[]> {
   const dailies = await getCollection("daily")
   return dailies.sort(

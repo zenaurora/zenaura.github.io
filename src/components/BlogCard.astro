@@ -3,20 +3,27 @@ import { formatDate } from "@/lib/utils"
 import { Image } from "astro:assets"
 import { getEntries, type CollectionEntry } from "astro:content"
 
-type Props = { post: CollectionEntry<"blog"> }
+type Props = {
+  post: CollectionEntry<"blog"> | CollectionEntry<"papers">
+  basePath?: "/blog" | "/papers"
+}
 
-const { post } = Astro.props
+const { post, basePath = "/blog" } = Astro.props
 const authors = await getEntries(post.data.authors)
+const isProtected = "protected" in post.data && post.data.protected
 ---
 
 <li>
   {post.data.image && (
-      <a href={`/blog/${post.id}`} tabindex="-1" aria-hidden="true">
+      <a href={`${basePath}/${post.id}`} tabindex="-1" aria-hidden="true">
         <Image src={post.data.image} alt="" width={640} height={336} />
       </a>
     )}
   <entry-info>
-    <a href={`/blog/${post.id}`}>{post.data.title}</a>
+    <entry-title>
+      <a href={`${basePath}/${post.id}`}>{post.data.title}</a>
+      {isProtected && <span aria-label="受密码保护">Locked</span>}
+    </entry-title>
     <entry-meta>
       {authors.length > 0 && (
           <entry-authors>
@@ -48,7 +55,9 @@ const authors = await getEntries(post.data.authors)
           </entry-tags>
         )}
     </entry-meta>
-    <p>{post.data.description}</p>
+    <p>
+      {isProtected ? "受密码保护，输入密码后查看内容。" : post.data.description}
+    </p>
   </entry-info>
 </li>
 
@@ -72,10 +81,27 @@ const authors = await getEntries(post.data.authors)
       display: flex;
       flex-direction: column;
 
-      > a {
-        font-size: var(--step-1);
-        line-height: calc(var(--leading-offset) + 1em);
-        font-weight: var(--font-weight-medium);
+      entry-title {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: var(--space-2xs);
+
+        > a {
+          font-size: var(--step-1);
+          line-height: calc(var(--leading-offset) + 1em);
+          font-weight: var(--font-weight-medium);
+        }
+
+        > span {
+          border: 1px solid var(--border);
+          border-radius: var(--radius-full);
+          padding: 0.12em 0.55em;
+          font-family: var(--font-mono);
+          font-size: var(--step--2);
+          line-height: 1.4;
+          color: var(--muted-foreground);
+        }
       }
 
       entry-meta {

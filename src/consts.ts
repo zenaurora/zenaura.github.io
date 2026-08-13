@@ -17,10 +17,20 @@ export const SITE = {
 
 export const NAVIGATION = [
   { href: "/blog", label: "Blog" },
+  { href: "/papers", label: "Papers" },
   { href: "/daily", label: "Daily" },
   { href: "/projects", label: "Projects" },
   { href: "/authors", label: "Authors" },
 ]
+
+export const PROTECTED_CONTENT = {
+  researchIdeas: {
+    parentId: "research-ideas",
+    passwordHash:
+      "fcb9d2f309338d01268126c28e70ca6757ca0898df961df726b39be667214a07",
+    storageKey: "research-ideas-access",
+  },
+} as const
 
 export const SOCIALS: { href: string; label: string; icon: SvgComponent }[] = [
   { href: "https://github.com/zenaurora", label: "GitHub", icon: GitHub },

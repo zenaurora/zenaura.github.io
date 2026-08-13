@@ -1,0 +1,48 @@
+---
+import BlogCard from "@/components/BlogCard.astro"
+import MetaPage from "@/components/MetaPage.astro"
+import Layout from "@/layouts/Layout.astro"
+import { getPapers } from "@/lib/content"
+
+const papers = await getPapers()
+---
+
+<Layout>
+  <MetaPage
+    slot="head"
+    title="Papers"
+    description="论文阅读笔记：梳理研究动机、核心方法、实现细节与局限。"
+  />
+  <header>
+    <h1>Papers</h1>
+    <p>论文阅读笔记：梳理研究动机、核心方法、实现细节与局限。</p>
+  </header>
+  <ul>
+    {papers.map((paper) => (
+      <BlogCard post={paper} basePath="/papers" />
+    ))}
+  </ul>
+</Layout>
+
+<style>
+  header {
+    margin-block-end: var(--space-l);
+
+    h1 {
+      font-size: var(--step-3);
+      line-height: calc(var(--leading-offset) + 1em);
+      font-weight: var(--font-weight-medium);
+    }
+
+    p {
+      margin-block-start: var(--space-2xs);
+      color: var(--muted-foreground);
+    }
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-m);
+  }
+</style>
