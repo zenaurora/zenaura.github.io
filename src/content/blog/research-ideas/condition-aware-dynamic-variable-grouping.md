@@ -88,12 +88,12 @@ $$
 
 ## 与已有工作的关系
 
-| 工作 | 与这个 Idea 的关系 |
-| --- | --- |
+| 工作                                 | 与这个 Idea 的关系                                                                                                                |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | **Channel Clustering Module（CCM）** | 与这个 Idea 最接近。它从 CI / CD trade-off 出发，根据 channel intrinsic similarity 动态进行 channel clustering，以避免 CD 混入 irrelevant channels。 |
-| **DGCformer** | 使用 GCN + Autoencoder 对相关变量进行 graph clustering；Group 内使用 CD，不同 Group 之间使用 CI。整体思想与 Group Forecasting 高度接近。 |
-| **DUET** | 使用 Channel-Soft-Clustering，在频域通过 metric learning 学习 channel relationship，并进行 sparsification，以降低 noisy channels 的影响。 |
-| **CrossGNN 等 channel-relation 模型** | 研究跨变量依赖以及 noisy channel interaction，但重点更多是设计 relation modeling，不一定显式进行动态 Group。 |
+| **DGCformer**                      | 使用 GCN + Autoencoder 对相关变量进行 graph clustering；Group 内使用 CD，不同 Group 之间使用 CI。整体思想与 Group Forecasting 高度接近。                   |
+| **DUET**                           | 使用 Channel-Soft-Clustering，在频域通过 metric learning 学习 channel relationship，并进行 sparsification，以降低 noisy channels 的影响。         |
+| **CrossGNN 等 channel-relation 模型** | 研究跨变量依赖以及 noisy channel interaction，但重点更多是设计 relation modeling，不一定显式进行动态 Group。                                             |
 
 ## 可能的研究区别
 

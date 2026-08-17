@@ -96,3 +96,14 @@ $$
 从现有工作密度看，Idea 2 的 channel grouping 已经有 CCM、DGCformer、DUET 等直接相关工作；Idea 3 的 TTA 也已经形成 TAFAS、PETSA、COSA、FAC 等路线。相对而言，更值得继续挖掘的是 **Idea 1 与 Idea 2 / Idea 3 的结合**：让统一的 condition representation 同时决定模型参数、变量关系，以及 test-time adaptation 的初始化或强度。
 
 这是基于当前文献脉络得到的研究方向判断，而不是已有论文已经给出的结论。后续的三篇子博客会分别展开这三个 Idea。
+
+----
+
+如果用一个Encoder去提取标准差，这个标准差不能是负数，所以可以用SoftPlus激活
+$$
+Softplus = \log{1+e^x}
+$$
+$$
+Z_n = Encoder_{\mu}(X) + ϵ ⊙ Softplus(Encoder_\sigma(X))
+$$
+

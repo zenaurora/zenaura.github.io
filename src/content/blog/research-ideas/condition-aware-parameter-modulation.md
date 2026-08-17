@@ -68,12 +68,12 @@ $$
 
 ## 与已有工作的关系
 
-| 工作 | 与这个 Idea 的关系 |
-| --- | --- |
-| **CW-Gen / JMCE** | 根据当前历史 $C$ 预测未来条件均值 $\hat\mu(C)$ 和协方差 $\hat\Sigma(C)$，再据此改变后续生成模型所处理的数据分布。核心同样是 context → adaptive parameters / statistics。 |
-| **Dish-TS** | 使用 CONET 将输入序列映射为可学习的 distribution coefficients，并分别建模 input / output distribution，是“根据当前 instance 动态预测统计参数”的直接相关工作。 |
-| **SAN** | 在局部 temporal slice 上进行 adaptive normalization，并使用轻量网络预测不断变化的统计属性。 |
-| **Non-stationary Transformer** | 从原始非平稳输入中提取 de-stationary information，再动态修正 Transformer attention，属于“根据当前序列产生调制信息”的相邻思路。 |
+| 工作                                             | 与这个 Idea 的关系                                                                                                                              |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **CW-Gen / JMCE**                              | 根据当前历史 $C$ 预测未来条件均值 $\hat\mu(C)$ 和协方差 $\hat\Sigma(C)$，再据此改变后续生成模型所处理的数据分布。核心同样是 context → adaptive parameters / statistics。               |
+| **Dish-TS**                                    | 使用 CONET 将输入序列映射为可学习的 distribution coefficients，并分别建模 input / output distribution，是“根据当前 instance 动态预测统计参数”的直接相关工作。                       |
+| **SAN**                                        | 在局部 temporal slice 上进行 adaptive normalization，并使用轻量网络预测不断变化的统计属性。                                                                         |
+| **Non-stationary Transformer**                 | 从原始非平稳输入中提取 de-stationary information，再动态修正 Transformer attention，属于“根据当前序列产生调制信息”的相邻思路。                                                  |
 | **External Data-Enhanced Meta-Representation** | 使用 hypernetwork 根据 contextual signal 动态调制 base network 的少量参数，与 condition → parameter generator → backbone 的结构非常接近，不过主要使用外部信息作为 condition。 |
 
 ## 可能的研究区别
