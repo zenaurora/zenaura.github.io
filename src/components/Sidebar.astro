@@ -78,6 +78,7 @@ const section = NAVIGATION.find(
 
     @media (width < 64rem) {
       position: static;
+      min-inline-size: 0;
       height: auto;
       flex-direction: row;
       align-items: center;
@@ -115,9 +116,23 @@ const section = NAVIGATION.find(
 
     @media (width < 64rem) {
       flex: 1;
+      min-inline-size: 0;
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
+      gap: var(--space-s);
+    }
+  }
+
+  nav {
+    @media (width < 64rem) {
+      min-inline-size: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
   }
 
@@ -153,6 +168,7 @@ const section = NAVIGATION.find(
     }
 
     @media (width < 64rem) {
+      inline-size: max-content;
       flex-direction: row;
       align-items: center;
       gap: var(--space-s);

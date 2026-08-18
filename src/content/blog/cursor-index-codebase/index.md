@@ -1,3 +1,16 @@
+---
+title: "Cursor 如何索引代码库"
+description: "从代码分块、向量检索到 Merkle Tree 增量同步，梳理 Cursor 构建代码库索引的核心流程。"
+date: 2026-08-18
+authors:
+  - maokaihe
+tags:
+  - Cursor
+  - RAG
+  - Code Indexing
+draft: true
+---
+
 最近看了一个文章：[](https://towardsdatascience.com/how-cursor-actually-indexes-your-codebase/)
 有兴趣可以看原文，关于cursor如何对代码库进行处理和索引的，我看完之后在这里总结一下
 
@@ -28,4 +41,3 @@
 当然，肯定不能我就生成一次嵌入之后就结束了，代码仓库是一个高频变化的，所以需要尽可能的实时去更新。Cursor会自动的定期同步，大概几分钟一次，然后移除旧的加进来新的（为了效率，肯定只更新有变化的文件）
 
 每个代码文件都通过哈希，然后整个目录里面的多层文件夹和文件的哈希就组成了一个Merkle Tree。代码库的 Merkle 树会同步到 Cursor 服务器，服务器会定期检查指纹不匹配，以识别哪些内容发生了变化。
-

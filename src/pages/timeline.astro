@@ -1,0 +1,17 @@
+---
+import MetaPage from "@/components/MetaPage.astro"
+import TimelineArchive from "@/components/TimelineArchive.astro"
+import Layout from "@/layouts/Layout.astro"
+import { getPosts } from "@/lib/content"
+
+const posts = await getPosts()
+---
+
+<Layout>
+  <MetaPage
+    slot="head"
+    title="Timeline"
+    description="A chronological archive of every published blog post."
+  />
+  <TimelineArchive posts={posts} />
+</Layout>

@@ -17,6 +17,7 @@ export const SITE = {
 
 export const NAVIGATION = [
   { href: "/blog", label: "Blog" },
+  { href: "/timeline", label: "Timeline" },
   { href: "/papers", label: "Papers" },
   { href: "/daily", label: "Daily" },
   { href: "/projects", label: "Projects" },

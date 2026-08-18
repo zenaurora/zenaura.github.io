@@ -1,0 +1,635 @@
+---
+import type { CollectionEntry } from "astro:content"
+
+type Post = CollectionEntry<"blog">
+
+type Props = {
+  posts: Post[]
+}
+
+const { posts } = Astro.props
+
+const monthFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "long",
+  timeZone: "UTC",
+})
+const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "2-digit",
+  timeZone: "UTC",
+})
+
+const years = new Map<number, Map<number, Post[]>>()
+
+for (const post of posts) {
+  const year = post.data.date.getUTCFullYear()
+  const month = post.data.date.getUTCMonth()
+  const yearGroup = years.get(year) ?? new Map<number, Post[]>()
+  const monthGroup = yearGroup.get(month) ?? []
+  monthGroup.push(post)
+  yearGroup.set(month, monthGroup)
+  years.set(year, yearGroup)
+}
+
+const yearGroups = [...years.entries()].map(([year, months]) => ({
+  year,
+  months: [...months.entries()].map(([month, monthPosts]) => ({
+    month,
+    label: monthFormatter.format(new Date(year, month, 1)),
+    posts: monthPosts,
+  })),
+  count: [...months.values()].reduce((total, group) => total + group.length, 0),
+}))
+
+const activeMonthCount = yearGroups.reduce(
+  (total, group) => total + group.months.length,
+  0,
+)
+const oldestPost = posts.at(-1)
+const newestPost = posts.at(0)
+const yearSpan =
+  oldestPost && newestPost
+    ? newestPost.data.date.getUTCFullYear() -
+      oldestPost.data.date.getUTCFullYear() +
+      1
+    : 0
+---
+
+<section class="timeline-archive" data-timeline-root>
+  <header class="timeline-intro">
+    <p class="eyebrow">Writing archive</p>
+    <h1>Timeline</h1>
+    <p class="lede">
+      A chronological field log of ideas, experiments, and things learned along
+      the way.
+    </p>
+  </header>
+
+  <div class="archive-console">
+    <dl class="archive-stats" aria-label="Archive overview">
+      <div>
+        <dt>Published</dt>
+        <dd>{posts.length}<span> posts</span></dd>
+      </div>
+      <div>
+        <dt>Active span</dt>
+        <dd>{yearSpan}<span> {yearSpan === 1 ? "year" : "years"}</span></dd>
+      </div>
+      <div>
+        <dt>Writing months</dt>
+        <dd>{activeMonthCount}<span> months</span></dd>
+      </div>
+    </dl>
+
+    <label class="timeline-search">
+      <span>Search the archive</span>
+      <input
+        type="search"
+        placeholder="Title, description, or tag…"
+        autocomplete="off"
+        data-timeline-search
+      >
+      <kbd aria-hidden="true">/</kbd>
+    </label>
+
+    <nav class="year-index" aria-label="Jump to year">
+      <span>Jump to</span>
+      {yearGroups.map(({ year }) => <a href={`#year-${year}`}>{year}</a>)}
+    </nav>
+  </div>
+
+  <p class="result-status" aria-live="polite" data-result-status>
+    Showing all {posts.length} posts
+  </p>
+
+  <div class="timeline-track">
+    {yearGroups.map(({ year, months, count }, yearIndex) => (
+      <section
+        class="timeline-year"
+        id={`year-${year}`}
+        data-timeline-year
+        style={`--year-index: ${yearIndex}`}
+      >
+        <header class="year-heading">
+          <div>
+            <h2>{year}</h2>
+            <p>{count} {count === 1 ? "entry" : "entries"}</p>
+          </div>
+          <span aria-hidden="true">{String(yearIndex + 1).padStart(2, "0")}</span>
+        </header>
+
+        <div class="year-months">
+          {months.map(({ month, label, posts: monthPosts }) => (
+            <section
+              class="timeline-month"
+              data-timeline-month
+              style={`--month-weight: ${Math.min(monthPosts.length, 5)}`}
+            >
+              <div class="month-marker" aria-hidden="true">
+                <span></span>
+              </div>
+              <header class="month-heading">
+                <h3>{label}</h3>
+                <span>{String(month + 1).padStart(2, "0")}</span>
+              </header>
+
+              <ol>
+                {monthPosts.map((post) => (
+                  <li
+                    data-timeline-post
+                    data-search={`${post.data.title} ${post.data.description} ${(post.data.tags ?? []).join(" ")}`.toLocaleLowerCase()}
+                  >
+                    <a href={`/blog/${post.id}`}>
+                      <time datetime={post.data.date.toISOString()}>
+                        {shortDateFormatter.format(post.data.date)}
+                      </time>
+                      <span class="post-title">{post.data.title}</span>
+                      <span class="post-arrow" aria-hidden="true">↗</span>
+                    </a>
+                    {post.data.tags && post.data.tags.length > 0 && (
+                      <div class="post-tags" aria-label="Tags">
+                        {post.data.tags.slice(0, 3).map((tag) => <span>#{tag}</span>)}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ))}
+        </div>
+      </section>
+    ))}
+  </div>
+
+  <div class="timeline-empty" data-timeline-empty hidden>
+    <p>No writing found.</p>
+    <button type="button" data-clear-search>Clear search</button>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-timeline-root]")
+
+  if (root) {
+    const search = root.querySelector<HTMLInputElement>(
+      "[data-timeline-search]",
+    )
+    const posts = [
+      ...root.querySelectorAll<HTMLElement>("[data-timeline-post]"),
+    ]
+    const months = [
+      ...root.querySelectorAll<HTMLElement>("[data-timeline-month]"),
+    ]
+    const years = [
+      ...root.querySelectorAll<HTMLElement>("[data-timeline-year]"),
+    ]
+    const status = root.querySelector<HTMLElement>("[data-result-status]")
+    const empty = root.querySelector<HTMLElement>("[data-timeline-empty]")
+    const clear = root.querySelector<HTMLButtonElement>("[data-clear-search]")
+
+    const updateTimeline = () => {
+      const query = search?.value.trim().toLocaleLowerCase() ?? ""
+      let visibleCount = 0
+
+      for (const post of posts) {
+        const matches = !query || post.dataset.search?.includes(query)
+        post.hidden = !matches
+        if (matches) visibleCount += 1
+      }
+
+      for (const month of months) {
+        month.hidden = !month.querySelector(
+          "[data-timeline-post]:not([hidden])",
+        )
+      }
+
+      for (const year of years) {
+        year.hidden = !year.querySelector("[data-timeline-month]:not([hidden])")
+      }
+
+      if (status) {
+        status.textContent = query
+          ? `${visibleCount} ${visibleCount === 1 ? "post" : "posts"} found`
+          : `Showing all ${posts.length} posts`
+      }
+      if (empty) empty.hidden = visibleCount !== 0
+    }
+
+    search?.addEventListener("input", updateTimeline)
+    clear?.addEventListener("click", () => {
+      if (!search) return
+      search.value = ""
+      updateTimeline()
+      search.focus()
+    })
+
+    document.addEventListener("keydown", (event) => {
+      const target = event.target as HTMLElement | null
+      const isTyping = target?.matches(
+        "input, textarea, select, [contenteditable]",
+      )
+      if (event.key === "/" && !isTyping) {
+        event.preventDefault()
+        search?.focus()
+      }
+      if (
+        event.key === "Escape" &&
+        search &&
+        document.activeElement === search
+      ) {
+        search.value = ""
+        updateTimeline()
+        search.blur()
+      }
+    })
+  }
+</script>
+
+<style>
+  .timeline-archive {
+    --timeline-line: color-mix(in oklab, var(--foreground) 14%, transparent);
+    display: block;
+  }
+
+  .timeline-intro {
+    position: relative;
+    padding-block-end: var(--space-l);
+  }
+
+  .eyebrow {
+    margin-block-end: var(--space-xs);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted-foreground);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  h1 {
+    font-size: clamp(3.75rem, 2rem + 8vw, 7.25rem);
+    font-weight: 500;
+    line-height: 0.82;
+    letter-spacing: -0.075em;
+    color: var(--foreground);
+  }
+
+  .lede {
+    max-inline-size: 31rem;
+    margin-block-start: var(--space-m);
+    font-size: var(--step-1);
+    line-height: 1.45;
+    color: var(--muted-foreground);
+  }
+
+  .archive-console {
+    display: grid;
+    gap: var(--space-s);
+    padding-block: var(--space-s);
+    border-block: 1px solid var(--border);
+  }
+
+  .archive-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-s);
+  }
+
+  .archive-stats div {
+    min-inline-size: 0;
+  }
+
+  .archive-stats dt,
+  .year-index > span {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted-foreground);
+  }
+
+  .archive-stats dd {
+    margin-block-start: 0.15rem;
+    font-family: var(--font-mono);
+    font-size: var(--step-1);
+    font-weight: 500;
+    color: var(--foreground);
+  }
+
+  .archive-stats dd span {
+    font-size: var(--step--1);
+    font-weight: 400;
+    color: var(--muted-foreground);
+  }
+
+  .timeline-search {
+    position: relative;
+    display: block;
+  }
+
+  .timeline-search > span {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .timeline-search input {
+    inline-size: 100%;
+    padding: 0.72rem 2.5rem 0.72rem 0;
+    border-block-end: 1px solid var(--border);
+    color: var(--foreground);
+    transition: border-color 180ms ease;
+  }
+
+  .timeline-search input:focus {
+    outline: none;
+    border-color: var(--foreground);
+  }
+
+  .timeline-search kbd {
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-start: 50%;
+    translate: 0 -50%;
+    display: grid;
+    place-items: center;
+    inline-size: 1.6rem;
+    block-size: 1.6rem;
+    border: 1px solid var(--border);
+    border-radius: 0.3rem;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted-foreground);
+  }
+
+  .year-index {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-xs);
+  }
+
+  .year-index a {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--foreground);
+  }
+
+  .result-status {
+    margin-block: var(--space-s) var(--space-xl);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted-foreground);
+  }
+
+  .timeline-track {
+    position: relative;
+  }
+
+  .timeline-track::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 7.45rem;
+    inline-size: 1px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      var(--timeline-line) 2rem calc(100% - 2rem),
+      transparent
+    );
+  }
+
+  .timeline-year {
+    scroll-margin-block-start: calc(
+      var(--bar-nav-height, 0px) +
+      var(--space-l)
+    );
+  }
+
+  .timeline-year + .timeline-year {
+    margin-block-start: var(--space-3xl);
+  }
+
+  .year-heading {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-block-end: var(--space-l);
+    padding-block-end: var(--space-xs);
+    border-block-end: 1px solid var(--border);
+  }
+
+  .year-heading h2 {
+    font-family: var(--font-mono);
+    font-size: clamp(2rem, 1.5rem + 2vw, 3rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: var(--foreground);
+  }
+
+  .year-heading p {
+    margin-block-start: var(--space-3xs);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted-foreground);
+  }
+
+  .year-heading > span {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: color-mix(in oklab, var(--muted-foreground) 50%, transparent);
+  }
+
+  .year-months {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  .timeline-month {
+    position: relative;
+    display: grid;
+    grid-template-columns: 6rem minmax(0, 1fr);
+    column-gap: 3rem;
+  }
+
+  .month-marker {
+    position: absolute;
+    inset-inline-start: 7.45rem;
+    inset-block-start: 0.52rem;
+    display: grid;
+    place-items: center;
+    inline-size: 1px;
+    block-size: 1px;
+  }
+
+  .month-marker span {
+    inline-size: calc(0.38rem + var(--month-weight) * 0.055rem);
+    block-size: calc(0.38rem + var(--month-weight) * 0.055rem);
+    border: 2px solid var(--background);
+    border-radius: 50%;
+    background: var(--foreground);
+    box-shadow: 0 0 0 1px var(--timeline-line);
+  }
+
+  .month-heading {
+    text-align: end;
+  }
+
+  .month-heading h3 {
+    font-size: var(--step-0);
+    font-weight: 500;
+    color: var(--foreground);
+  }
+
+  .month-heading span {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted-foreground);
+  }
+
+  .timeline-month ol {
+    min-inline-size: 0;
+  }
+
+  .timeline-month li {
+    padding-block-end: var(--space-s);
+    border-block-end: 1px solid
+      color-mix(in oklab, var(--border) 72%, transparent);
+  }
+
+  .timeline-month li + li {
+    padding-block-start: var(--space-s);
+  }
+
+  .timeline-month a {
+    display: grid;
+    grid-template-columns: 3.4rem minmax(0, 1fr) auto;
+    gap: var(--space-xs);
+    align-items: baseline;
+    text-decoration: none;
+  }
+
+  .timeline-month time {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted-foreground);
+    white-space: nowrap;
+  }
+
+  .post-title {
+    min-inline-size: 0;
+    font-size: var(--step-0);
+    font-weight: 450;
+    line-height: 1.35;
+    color: var(--foreground);
+    transition: translate 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .post-arrow {
+    opacity: 0;
+    color: var(--muted-foreground);
+    translate: -0.35rem 0.2rem;
+    transition:
+      opacity 180ms ease,
+      translate 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .timeline-month a:hover .post-title,
+  .timeline-month a:focus-visible .post-title {
+    translate: 0.2rem 0;
+  }
+
+  .timeline-month a:hover .post-arrow,
+  .timeline-month a:focus-visible .post-arrow {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    margin-block-start: var(--space-3xs);
+    margin-inline-start: calc(3.4rem + var(--space-xs));
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: color-mix(in oklab, var(--muted-foreground) 72%, transparent);
+  }
+
+  .timeline-empty {
+    padding-block: var(--space-2xl);
+    text-align: center;
+    color: var(--muted-foreground);
+  }
+
+  .timeline-empty button {
+    margin-block-start: var(--space-xs);
+    border-block-end: 1px solid currentColor;
+    color: var(--foreground);
+    cursor: pointer;
+  }
+
+  @media (width < 40rem) {
+    h1 {
+      font-size: clamp(3.5rem, 20vw, 5.5rem);
+    }
+
+    .archive-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .archive-stats div:last-child {
+      grid-column: 1 / -1;
+    }
+
+    .timeline-track::before {
+      inset-inline-start: 0.3rem;
+    }
+
+    .timeline-month {
+      grid-template-columns: 1fr;
+      padding-inline-start: var(--space-l);
+    }
+
+    .month-marker {
+      inset-inline-start: 0.3rem;
+    }
+
+    .month-heading {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2xs);
+      margin-block-end: var(--space-xs);
+      text-align: start;
+    }
+
+    .month-heading h3 {
+      font-size: var(--step-1);
+    }
+
+    .timeline-month a {
+      grid-template-columns: 3.4rem minmax(0, 1fr);
+    }
+
+    .post-arrow {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .timeline-year {
+      animation: timeline-reveal 0.65s both cubic-bezier(0.16, 1, 0.3, 1);
+      animation-delay: calc(var(--year-index) * 70ms);
+    }
+
+    @keyframes timeline-reveal {
+      from {
+        opacity: 0;
+        translate: 0 0.8rem;
+      }
+    }
+  }
+</style>
