@@ -1,5 +1,6 @@
 ---
 import { formatDate } from "@/lib/utils"
+import { isFullyAiTag } from "@/lib/tags"
 import { Image } from "astro:assets"
 import { getEntries, type CollectionEntry } from "astro:content"
 
@@ -50,7 +51,12 @@ const isProtected = "protected" in post.data && post.data.protected
       {post.data.tags && (
           <entry-tags>
             {post.data.tags.map((tag) => (
-              <span>#{tag}</span>
+              <span
+                data-tag-kind={isFullyAiTag(tag) ? "fully-ai" : undefined}
+                title={isFullyAiTag(tag) ? "Fully AI-generated" : undefined}
+              >
+                #{tag}
+              </span>
             ))}
           </entry-tags>
         )}

@@ -2,6 +2,7 @@
 import MetaPage from "@/components/MetaPage.astro"
 import Layout from "@/layouts/Layout.astro"
 import { getTags } from "@/lib/content"
+import { isFullyAiTag } from "@/lib/tags"
 
 const tags = await getTags()
 ---
@@ -11,7 +12,13 @@ const tags = await getTags()
   <ul>
     {[...tags].map(([tag, posts]) => (
         <li>
-          <a href={`/tags/${tag}`}>#{tag}<tag-count>{posts.length}</tag-count></a>
+          <a
+            href={`/tags/${tag}`}
+            data-tag-kind={isFullyAiTag(tag) ? "fully-ai" : undefined}
+            title={isFullyAiTag(tag) ? "Fully AI-generated" : undefined}
+          >
+            #{tag}<tag-count>{posts.length}</tag-count>
+          </a>
         </li>
       ))}
   </ul>

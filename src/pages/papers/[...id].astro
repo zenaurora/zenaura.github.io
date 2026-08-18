@@ -4,6 +4,7 @@ import ScrollToTop from "@/components/ScrollToTop.astro"
 import TableOfContents from "@/components/TableOfContents.astro"
 import Layout from "@/layouts/Layout.astro"
 import { formatDate } from "@/lib/utils"
+import { isFullyAiTag } from "@/lib/tags"
 import { Image } from "astro:assets"
 import {
   getCollection,
@@ -69,7 +70,14 @@ const crumbs = [{ label: paper.data.title, href: `/papers/${paper.id}` }]
         </time>
         {paper.data.tags && (
           <post-tags>
-            {paper.data.tags.map((tag) => <span>#{tag}</span>)}
+            {paper.data.tags.map((tag) => (
+              <span
+                data-tag-kind={isFullyAiTag(tag) ? "fully-ai" : undefined}
+                title={isFullyAiTag(tag) ? "Fully AI-generated" : undefined}
+              >
+                #{tag}
+              </span>
+            ))}
           </post-tags>
         )}
       </post-meta>

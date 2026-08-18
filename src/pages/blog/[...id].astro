@@ -9,6 +9,7 @@ import Layout from "@/layouts/Layout.astro"
 import { PROTECTED_CONTENT } from "@/consts"
 import { getPosts, getSubposts, pageTitle } from "@/lib/content"
 import { formatDate, isSubpost, subpostSlug } from "@/lib/utils"
+import { isFullyAiTag } from "@/lib/tags"
 import { Image } from "astro:assets"
 import { getEntries, render, type CollectionEntry } from "astro:content"
 
@@ -121,7 +122,13 @@ if (isSubpost(post.id)) {
             {entry.data.tags && (
               <post-tags>
                 {entry.data.tags.map((tag) => (
-                  <a href={`/tags/${tag}`}>#{tag}</a>
+                  <a
+                    href={`/tags/${tag}`}
+                    data-tag-kind={isFullyAiTag(tag) ? "fully-ai" : undefined}
+                    title={isFullyAiTag(tag) ? "Fully AI-generated" : undefined}
+                  >
+                    #{tag}
+                  </a>
                 ))}
               </post-tags>
             )}

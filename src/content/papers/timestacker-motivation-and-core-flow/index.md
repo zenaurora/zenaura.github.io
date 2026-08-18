@@ -15,26 +15,26 @@ tags:
 
 给定历史多变量时间序列：
 
-\[
+$$
 X_{t-T+1:t}\in\mathbb{R}^{D\times T}
-\]
+$$
 
 其中：
 
-- \(D\)：变量数量；
-- \(T\)：历史输入长度。
+- $D$：变量数量；
+- $T$：历史输入长度。
 
-目标是预测未来长度为 \(H\) 的序列：
+目标是预测未来长度为 $H$ 的序列：
 
-\[
+$$
 \hat{X}_{t+1:t+H}\in\mathbb{R}^{D\times H}
-\]
+$$
 
 TimeStacker 采用 **Channel Independence（CI）**。不同变量独立通过同一套网络参数：
 
-\[
+$$
 \hat{y}_d=f_\theta(x_d),\qquad d=1,\dots,D
-\]
+$$
 
 因此模型不显式建模变量之间的相关性，而是对每个变量独立建模，并在不同变量之间共享参数。
 
@@ -46,7 +46,7 @@ TimeStacker 采用 **Channel Independence（CI）**。不同变量独立通过�
 
 非平稳时间序列的统计特性会随时间改变，其频率组成也会动态变化。论文将非平稳信号表示为：
 
-\[
+$$
 x(t)=a_0(t)+
 \sum_{n=1}^{\infty}
 \left[
@@ -54,9 +54,9 @@ a_n(t)\cos(2\pi n f_0t)
 +
 b_n(t)\sin(2\pi n f_0t)
 \right]
-\]
+$$
 
-其中 \(a_n(t)\)、\(b_n(t)\) 随时间变化，因此不同时间区间中的频率结构可能不同。
+其中 $a_n(t)$、$b_n(t)$ 随时间变化，因此不同时间区间中的频率结构可能不同。
 
 所以，对非平稳时间序列而言，只在整个历史窗口上进行一次全局频域分析不足以描述频率随时间的变化，需要对局部时间区间进行频率建模。
 
@@ -66,29 +66,29 @@ b_n(t)\sin(2\pi n f_0t)
 
 给定单变量历史序列：
 
-\[
+$$
 X=[x_1,x_2,\dots,x_T]\in\mathbb{R}^{T}
-\]
+$$
 
-选择 patch size \(p\)，将序列切分为：
+选择 patch size $p$，将序列切分为：
 
-\[
+$$
 k=\frac{T}{p}
-\]
+$$
 
 个非重叠 patch：
 
-\[
+$$
 X_p=
 [\xi_1,\xi_2,\dots,\xi_k]
 \in\mathbb{R}^{k\times p}
-\]
+$$
 
 其中每个 patch：
 
-\[
+$$
 \xi_i\in\mathbb{R}^{p}
-\]
+$$
 
 代表一个局部时间区间。
 
@@ -100,9 +100,9 @@ X_p=
 
 时频分析受到不确定性原理限制：
 
-\[
+$$
 \Delta t\cdot\Delta f\geq\frac{1}{4\pi}
-\]
+$$
 
 因此无法同时获得任意高的时间分辨率和频率分辨率。
 
@@ -115,9 +115,9 @@ X_p=
 
 TimeStacker 的核心思路不是寻找一个最优 patch，而是使用多个不同尺度：
 
-\[
+$$
 p_1>p_2>\dots>p_L
-\]
+$$
 
 并按从大到小的顺序串行堆叠多个 Stacker Block。
 
@@ -127,7 +127,7 @@ p_1>p_2>\dots>p_L
 
 TimeStacker 主要由以下部分组成：
 
-\[
+$$
 \boxed{
 \text{Normalization}
 \rightarrow
@@ -143,9 +143,9 @@ TimeStacker 主要由以下部分组成：
 \rightarrow
 \text{Denormalization}
 }
-\]
+$$
 
-每个 Stacker Block 对应一个 patch size \(p_l\)。
+每个 Stacker Block 对应一个 patch size $p_l$。
 
 Stacker Block 内部只有两个主要模块：
 
@@ -165,33 +165,33 @@ Stacker Block 内部只有两个主要模块：
 
 # 4. 输入归一化
 
-对于输入窗口 \(X\)，模型首先计算均值和标准差：
+对于输入窗口 $X$，模型首先计算均值和标准差：
 
-\[
+$$
 \mu=\operatorname{Mean}(X)
-\]
+$$
 
-\[
+$$
 \sigma=\operatorname{Std}(X)
-\]
+$$
 
 然后进行归一化：
 
-\[
+$$
 X^{(1)}
 =
 \frac{X-\mu}{\sigma}
-\]
+$$
 
 预测完成后再恢复：
 
-\[
+$$
 \hat{X}
 =
 \hat{X}'\sigma+\mu
-\]
+$$
 
-对于多变量输入，每个变量分别计算自己的 \(\mu\) 和 \(\sigma\)。
+对于多变量输入，每个变量分别计算自己的 $\mu$ 和 $\sigma$。
 
 ---
 
@@ -199,31 +199,31 @@ X^{(1)}
 
 假设模型输入：
 
-\[
+$$
 X\in\mathbb{R}^{B\times D\times T}
-\]
+$$
 
 其中：
 
-- \(B\)：batch size；
-- \(D\)：变量数；
-- \(T\)：历史长度。
+- $B$：batch size；
+- $D$：变量数；
+- $T$：历史长度。
 
 CI 将变量维并入 batch 维：
 
-\[
+$$
 [B,D,T]
 \rightarrow
 [BD,T]
-\]
+$$
 
 因此所有变量被视为独立的单变量序列，同时通过同一套 TimeStacker 参数。
 
 模型内部不会计算：
 
-\[
+$$
 D\times D
-\]
+$$
 
 的变量关系。
 
@@ -233,27 +233,27 @@ D\times D
 
 设 Patch Size List 为：
 
-\[
+$$
 P=\{p_1,p_2,\dots,p_L\}
-\]
+$$
 
 并满足：
 
-\[
+$$
 p_1>p_2>\dots>p_L
-\]
+$$
 
-每个 \(p_l\) 都要求能够整除 \(T\)。
+每个 $p_l$ 都要求能够整除 $T$。
 
-第 \(l\) 层的 patch 数量：
+第 $l$ 层的 patch 数量：
 
-\[
+$$
 k_l=\frac{T}{p_l}
-\]
+$$
 
 TimeStacker 的关键不是并行提取多个尺度后拼接，而是串行处理：
 
-\[
+$$
 X^{(1)}
 \xrightarrow{p_1}
 X^{(2)}
@@ -263,9 +263,9 @@ X^{(3)}
 \dots
 \xrightarrow{p_L}
 X^{(L+1)}
-\]
+$$
 
-每一层输出重新恢复为长度 \(T\) 的序列，再使用更小的 patch size 重新切分。
+每一层输出重新恢复为长度 $T$ 的序列，再使用更小的 patch size 重新切分。
 
 因此每一层处理的都是上一层已经更新过的完整序列。
 
@@ -273,9 +273,9 @@ X^{(L+1)}
 
 # 7. Stacker Block
 
-第 \(l\) 个 Stacker Block 可以写为：
+第 $l$ 个 Stacker Block 可以写为：
 
-\[
+$$
 \operatorname{StackerBlock}_l(X)
 =
 \operatorname{FreqAttn}
@@ -283,23 +283,23 @@ X^{(L+1)}
 \operatorname{SmoothLayer}_l(X)+X
 \right)
 +X
-\]
+$$
 
 包含两个残差结构：
 
-\[
+$$
 X
 \rightarrow
 \operatorname{SmoothLayer}(X)+X
-\]
+$$
 
 以及：
 
-\[
+$$
 X
 \rightarrow
 \operatorname{FreqAttn}(\cdot)+X
-\]
+$$
 
 ---
 
@@ -307,74 +307,74 @@ X
 
 Smooth Layer 使用一维卷积：
 
-\[
+$$
 \operatorname{SmoothLayer}_l(X)
 =
 W_l*X+b_l
-\]
+$$
 
 其卷积核大小等于当前 patch size：
 
-\[
+$$
 \text{kernel size}=p_l
-\]
+$$
 
 作用是利用一个局部时间窗口对序列进行平滑，降低异常点和局部噪声对后续频率关系建模的影响。
 
 经过残差后：
 
-\[
+$$
 X_s
 =
 \operatorname{SmoothLayer}_l(X)+X
-\]
+$$
 
 形状保持：
 
-\[
+$$
 X_s\in\mathbb{R}^{T}
-\]
+$$
 
 或在 batch / CI 场景下：
 
-\[
+$$
 X_s\in\mathbb{R}^{BD\times T}
-\]
+$$
 
 ---
 
 # 9. Patch 切分
 
-对第 \(l\) 层：
+对第 $l$ 层：
 
-\[
+$$
 p_l=\text{当前 patch size}
-\]
+$$
 
-\[
+$$
 k_l=\frac{T}{p_l}
-\]
+$$
 
-将长度为 \(T\) 的序列 reshape 为：
+将长度为 $T$ 的序列 reshape 为：
 
-\[
+$$
 X_p^{(l)}
 \in
 \mathbb{R}^{k_l\times p_l}
-\]
+$$
 
 在 batch 和 CI 情况下：
 
-\[
+$$
 X_p^{(l)}
 \in
 \mathbb{R}^{BD\times k_l\times p_l}
-\]
+$$
 
 其中：
 
-- \(k_l\)：patch 数量；
-- \(p_l\)：每个 patch 中的时间点数量。
+- $k_l$：patch 数量；
+- $p_l$：每个 patch 中的时间点数量。
 
 ---
 
@@ -382,16 +382,16 @@ X_p^{(l)}
 
 FreqAttention 的核心思想是：
 
-\[
+$$
 \boxed{
 \text{在频域计算 patch 之间的相似度，
 在时域完成 Value 聚合}
 }
-\]
+$$
 
 即：
 
-\[
+$$
 \text{Time-domain Patch}
 \rightarrow
 \text{FFT}
@@ -399,7 +399,7 @@ FreqAttention 的核心思想是：
 Q,K
 \rightarrow
 \text{Patch Similarity}
-\]
+$$
 
 然后使用得到的相关矩阵去聚合时域 Value。
 
@@ -409,40 +409,40 @@ Q,K
 
 对 patch 的最后一个维度进行 Fourier Transform：
 
-\[
+$$
 \tilde{X}^{(l)}
 =
 \mathcal{F}
 \left(
 X_p^{(l)}
 \right)
-\]
+$$
 
 对于实数输入，FFT 后只需要保留：
 
-\[
+$$
 F_l
 =
 \left\lfloor\frac{p_l}{2}\right\rfloor+1
-\]
+$$
 
 个非负频率分量。
 
 因此：
 
-\[
+$$
 X_p^{(l)}
 \in
 \mathbb{R}^{k_l\times p_l}
-\]
+$$
 
 变为：
 
-\[
+$$
 \tilde{X}^{(l)}
 \in
 \mathbb{C}^{k_l\times F_l}
-\]
+$$
 
 ---
 
@@ -450,29 +450,29 @@ X_p^{(l)}
 
 TimeStacker 不使用标准 Transformer 的完整线性投影，而是使用逐频率的可学习参数：
 
-\[
+$$
 W_q,W_k
 \in
 \mathbb{R}^{F_l}
-\]
+$$
 
 计算：
 
-\[
+$$
 Q
 =
 W_q\odot\tilde{X}^{(l)}
-\]
+$$
 
-\[
+$$
 K
 =
 W_k\odot\tilde{X}^{(l)}
-\]
+$$
 
-其中 \(\odot\) 表示 Hadamard Product，即逐元素乘法。
+其中 $\odot$ 表示 Hadamard Product，即逐元素乘法。
 
-因此 \(W_q\) 和 \(W_k\) 可以看作可学习的频率滤波参数，用于调整不同频率成分在相似度计算中的重要程度。
+因此 $W_q$ 和 $W_k$ 可以看作可学习的频率滤波参数，用于调整不同频率成分在相似度计算中的重要程度。
 
 ---
 
@@ -480,38 +480,38 @@ W_k\odot\tilde{X}^{(l)}
 
 使用 Q 和 K 计算不同 patch 之间的相关性：
 
-\[
+$$
 A_f
 =
 \operatorname{Softmax}
 \left(
 \frac{QK^\top}{\sqrt{d_k}}
 \right)
-\]
+$$
 
 其中：
 
-\[
+$$
 A_f
 \in
 \mathbb{R}^{k_l\times k_l}
-\]
+$$
 
 矩阵元素：
 
-\[
+$$
 A_{f,ij}
-\]
+$$
 
-表示第 \(i\) 个 patch 在聚合信息时，对第 \(j\) 个 patch 的权重。
+表示第 $i$ 个 patch 在聚合信息时，对第 $j$ 个 patch 的权重。
 
 因此 TimeStacker 的 FreqAttention 本质上是：
 
-\[
+$$
 \boxed{
 \text{利用频域表示计算历史 patch 之间的注意力关系}
 }
-\]
+$$
 
 其 Attention 的节点仍然是时间序列中的历史 patch，只是相似度不是在时域特征上计算，而是在频域特征上计算。
 
@@ -523,57 +523,57 @@ TimeStacker 不在频域中直接完成信息聚合。
 
 Value 来自原始时域 patch：
 
-\[
+$$
 V=X_p^{(l)}W_v
-\]
+$$
 
 然后：
 
-\[
+$$
 O
 =
 A_fV
-\]
+$$
 
 因此：
 
-\[
+$$
 A_f
 \in
 \mathbb{R}^{k_l\times k_l}
-\]
+$$
 
-\[
+$$
 V
 \in
 \mathbb{R}^{k_l\times p_l}
-\]
+$$
 
 最终：
 
-\[
+$$
 O
 \in
 \mathbb{R}^{k_l\times p_l}
-\]
+$$
 
 即：
 
-\[
+$$
 O_i
 =
 \sum_{j=1}^{k_l}
 A_{f,ij}V_j
-\]
+$$
 
 也就是说：
 
-\[
+$$
 \boxed{
 \text{频域负责确定“哪些历史 patch 相似”，
 时域负责传递真正的序列内容}
 }
-\]
+$$
 
 论文认为这种设计能够避免完全在频域中进行特征变换带来的 Fourier transform error 和 spectral leakage 问题。
 
@@ -583,7 +583,7 @@ A_{f,ij}V_j
 
 FreqAttention 可以写为：
 
-\[
+$$
 \operatorname{FreqAttn}(X)
 =
 \operatorname{Softmax}
@@ -596,11 +596,11 @@ FreqAttention 可以写为：
 }
 \right)
 XW_v
-\]
+$$
 
 Stacker Block 最终输出：
 
-\[
+$$
 X_{\text{out}}
 =
 \operatorname{FreqAttn}
@@ -609,15 +609,15 @@ X_{\text{out}}
 \right)
 +
 X
-\]
+$$
 
 然后重新 flatten：
 
-\[
+$$
 [k_l,p_l]
 \rightarrow
 [T]
-\]
+$$
 
 进入下一层 Stacker Block。
 
@@ -627,27 +627,27 @@ X
 
 假设：
 
-\[
+$$
 T=96
-\]
+$$
 
 Patch Size List：
 
-\[
+$$
 P=(96,48,32,24,16,12)
-\]
+$$
 
 则各层的 patch 数量为：
 
-\[
+$$
 1,\ 2,\ 3,\ 4,\ 6,\ 8
-\]
+$$
 
 完整流程：
 
 第一层：
 
-\[
+$$
 [96]
 \rightarrow
 [1,96]
@@ -659,11 +659,11 @@ A_f^{(1)}
 [1,96]
 \rightarrow
 [96]
-\]
+$$
 
 第二层：
 
-\[
+$$
 [96]
 \rightarrow
 [2,48]
@@ -675,11 +675,11 @@ A_f^{(2)}
 [2,48]
 \rightarrow
 [96]
-\]
+$$
 
 第三层：
 
-\[
+$$
 [96]
 \rightarrow
 [3,32]
@@ -691,25 +691,25 @@ A_f^{(3)}
 [3,32]
 \rightarrow
 [96]
-\]
+$$
 
 继续：
 
-\[
+$$
 [4,24]
 \rightarrow
 [6,16]
 \rightarrow
 [8,12]
-\]
+$$
 
 最终仍然得到：
 
-\[
+$$
 X^{(L)}
 \in
 \mathbb{R}^{96}
-\]
+$$
 
 ---
 
@@ -717,45 +717,45 @@ X^{(L)}
 
 所有 Stacker Block 处理完成后，TimeStacker 使用一个线性层直接完成多步预测：
 
-\[
+$$
 \hat{Y}'
 =
 W_{\text{pred}}X^{(L)}+b
-\]
+$$
 
 其中：
 
-\[
+$$
 W_{\text{pred}}
 \in
 \mathbb{R}^{H\times T}
-\]
+$$
 
 因此：
 
-\[
+$$
 [T]
 \rightarrow
 [H]
-\]
+$$
 
 例如：
 
-\[
+$$
 [96]
 \rightarrow
 [720]
-\]
+$$
 
 TimeStacker 是直接多步预测，不进行自回归解码。
 
 最后执行反归一化：
 
-\[
+$$
 \hat{Y}
 =
 \hat{Y}'\sigma+\mu
-\]
+$$
 
 得到最终预测结果。
 
@@ -765,88 +765,88 @@ TimeStacker 是直接多步预测，不进行自回归解码。
 
 输入：
 
-\[
+$$
 X\in\mathbb{R}^{B\times D\times T}
-\]
+$$
 
 Channel Independence：
 
-\[
+$$
 [B,D,T]
 \rightarrow
 [BD,T]
-\]
+$$
 
-第 \(l\) 层 patchify：
+第 $l$ 层 patchify：
 
-\[
+$$
 [BD,T]
 \rightarrow
 [BD,k_l,p_l]
-\]
+$$
 
 FFT：
 
-\[
+$$
 [BD,k_l,p_l]
 \rightarrow
 [BD,k_l,F_l]
-\]
+$$
 
 其中：
 
-\[
+$$
 F_l=
 \left\lfloor\frac{p_l}{2}\right\rfloor+1
-\]
+$$
 
 Frequency Attention：
 
-\[
+$$
 A_f
 \in
 \mathbb{R}^{BD\times k_l\times k_l}
-\]
+$$
 
 时域 Value：
 
-\[
+$$
 V
 \in
 \mathbb{R}^{BD\times k_l\times p_l}
-\]
+$$
 
 聚合：
 
-\[
+$$
 A_fV
 \rightarrow
 [BD,k_l,p_l]
-\]
+$$
 
 Flatten：
 
-\[
+$$
 [BD,k_l,p_l]
 \rightarrow
 [BD,T]
-\]
+$$
 
 经过所有 Stacker Block 后：
 
-\[
+$$
 [BD,T]
 \rightarrow
 [BD,H]
-\]
+$$
 
 最后恢复变量维：
 
-\[
+$$
 [BD,H]
 \rightarrow
 [B,D,H]
-\]
+$$
 
 ---
 
@@ -914,7 +914,7 @@ Input:
 
 TimeStacker 可以压缩为：
 
-\[
+$$
 \boxed{
 \text{Multi-scale Patch}
 +
@@ -924,7 +924,7 @@ TimeStacker 可以压缩为：
 +
 \text{Channel Independence}
 }
-\]
+$$
 
 核心贡献主要有两点。
 
@@ -932,9 +932,9 @@ TimeStacker 可以压缩为：
 
 通过：
 
-\[
+$$
 p_1>p_2>\dots>p_L
-\]
+$$
 
 从大窗口逐步切换到小窗口：
 
@@ -946,33 +946,33 @@ p_1>p_2>\dots>p_L
 
 关系矩阵：
 
-\[
+$$
 A_f
 =
 \operatorname{Softmax}
 \left(
 \frac{Q_fK_f^\top}{\sqrt{d_k}}
 \right)
-\]
+$$
 
 由频率特征决定。
 
 真正被聚合的 Value：
 
-\[
+$$
 V
-\]
+$$
 
 仍然来自时域 patch。
 
 因此本质上是：
 
-\[
+$$
 \boxed{
 \text{利用频谱相似性寻找历史相关 patch，
 再利用这些相关 patch 的时域信息更新当前序列表示}
 }
-\]
+$$
 
 ---
 
@@ -982,7 +982,7 @@ TimeStacker 并不是复杂的 Transformer。
 
 其主要可学习模块只有：
 
-\[
+$$
 \boxed{
 \text{Conv1D}
 +
@@ -992,7 +992,7 @@ W_v
 +
 \text{Linear Predictor}
 }
-\]
+$$
 
 FFT 本身没有参数。
 
@@ -1006,8 +1006,8 @@ FFT 本身没有参数。
 
 论文给出了总体公式，但以下实现细节没有完全说明：
 
-1. FFT 输出为复数，但论文没有明确说明 \(QK^\top\) 如何转换为实数后进入 Softmax；
-2. \(W_v\) 的具体张量维度和实现形式描述不够严格；
+1. FFT 输出为复数，但论文没有明确说明 $QK^\top$ 如何转换为实数后进入 Softmax；
+2. $W_v$ 的具体张量维度和实现形式描述不够严格；
 3. Smooth Layer 的 padding 等卷积细节未明确给出；
 4. Patch Size List 是针对不同数据集人工设置的，并非模型自动搜索得到；
 5. TimeStacker 采用 Channel Independence，因此不显式建模多变量之间的相关性，这也是论文在 Traffic 和 Electricity 等高维多变量数据集上的主要限制之一。
@@ -1016,7 +1016,7 @@ FFT 本身没有参数。
 
 # 21. 一句话流程
 
-\[
+$$
 \boxed{
 X
 \rightarrow
@@ -1040,4 +1040,4 @@ X
 \rightarrow
 \text{Denormalize}
 }
-\]
+$$

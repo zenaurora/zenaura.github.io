@@ -1,4 +1,6 @@
 ---
+import { isFullyAiTag, visibleTags } from "@/lib/tags"
+
 import type { CollectionEntry } from "astro:content"
 
 type Post = CollectionEntry<"blog">
@@ -148,7 +150,14 @@ const yearSpan =
                     </a>
                     {post.data.tags && post.data.tags.length > 0 && (
                       <div class="post-tags" aria-label="Tags">
-                        {post.data.tags.slice(0, 3).map((tag) => <span>#{tag}</span>)}
+                        {visibleTags(post.data.tags, 3).map((tag) => (
+                          <span
+                            data-tag-kind={isFullyAiTag(tag) ? "fully-ai" : undefined}
+                            title={isFullyAiTag(tag) ? "Fully AI-generated" : undefined}
+                          >
+                            #{tag}
+                          </span>
+                        ))}
                       </div>
                     )}
                   </li>

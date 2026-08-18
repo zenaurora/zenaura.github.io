@@ -1,0 +1,31 @@
+[data-tag-kind="fully-ai"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.08em 0.48em 0.12em;
+  border: 1px solid color-mix(in oklab, var(--primary) 42%, transparent);
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.35;
+  letter-spacing: 0.025em;
+  color: color-mix(in oklab, var(--primary) 78%, var(--foreground));
+  background-color: color-mix(in oklab, var(--primary) 11%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--primary) 5%, transparent);
+  text-decoration-line: none;
+  white-space: nowrap;
+}
+
+[data-tag-kind="fully-ai"]::before {
+  content: "✦";
+  font-size: 0.78em;
+  line-height: 1;
+  color: var(--primary);
+}
+
+a[data-tag-kind="fully-ai"]:hover {
+  border-color: color-mix(in oklab, var(--primary) 70%, transparent);
+  background-color: color-mix(in oklab, var(--primary) 17%, transparent);
+}
