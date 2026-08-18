@@ -15,17 +15,30 @@ My personal blog, built on [astro-erudite](https://github.com/jktrn/astro-erudit
 
 ## Themes
 
-Ships with 7 color themes, switchable via a dropdown picker:
+Ships with 20 color themes, switchable via a dropdown picker:
 
 | Theme | Vibe |
 |-------|------|
 | Light | Clean neutral |
+| Solarized | Warm paper and cyan |
+| Lake | Clear-water light |
 | Dark | Default dark |
 | Gruvbox | Warm retro |
 | Everforest | Soft forest greens |
 | Nord | Arctic blues |
 | Black Gold | AMOLED luxury |
 | Catppuccin | Pastel mocha |
+| Dracula | Violet contrast |
+| Tokyo Night | Electric midnight blue |
+| Rosé Pine | Muted mauve |
+| Synthwave '84 | Neon retro |
+| Monokai | High-contrast code editor |
+| Anthropic | Charcoal and terracotta |
+| Rose | Dusty rose |
+| Sunset | Peachy dusk |
+| Sea | Deep teal |
+| Lavender | Soft violet |
+| Cursor | Cursor-inspired editor dark |
 
 ## Development
 

@@ -468,11 +468,25 @@ Content
 支持主题：
 
 - `light`
+- `solarized-light`
+- `lake`
 - `dark`
 - `gruvbox-dark`
 - `everforest`
 - `nord`
 - `blackgold`
+- `catppuccin`
+- `dracula`
+- `tokyo-night`
+- `rose-pine`
+- `synthwave`
+- `monokai`
+- `anthropic`
+- `rose`
+- `sunset`
+- `sea`
+- `lavender`
+- `cursor`
 
 点击按钮会循环切换主题，并把结果存入 `localStorage.theme`。`MetaHead` 中的 inline script 会在页面早期读取这个值，写入 `document.documentElement.dataset.theme`，避免页面加载后再闪烁切换。
 

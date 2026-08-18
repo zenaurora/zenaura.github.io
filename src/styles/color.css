@@ -229,6 +229,111 @@
   color-scheme: dark;
 }
 
+/* Anthropic Theme */
+:root[data-theme="anthropic"] {
+  --background: #141413;
+  --foreground: #f5f4ed;
+  --primary: #d97757;
+  --primary-foreground: #141413;
+  --muted: #252422;
+  --muted-foreground: #b8b3a8;
+  --destructive: #e57373;
+  --border: #393733;
+  --ring: #d97757;
+
+  color-scheme: dark;
+}
+
+/* Rose Theme */
+:root[data-theme="rose"] {
+  --background: #21151b;
+  --foreground: #f9e8ee;
+  --primary: #ec8eab;
+  --primary-foreground: #21151b;
+  --muted: #321f28;
+  --muted-foreground: #c79ba9;
+  --destructive: #ff8fa8;
+  --border: #4a2c39;
+  --ring: #ec8eab;
+
+  color-scheme: dark;
+}
+
+/* Lake Theme */
+:root[data-theme="lake"] {
+  --background: #f2fbfc;
+  --foreground: #163b46;
+  --primary: #18869d;
+  --primary-foreground: #f2fbfc;
+  --muted: #dceff1;
+  --muted-foreground: #5e7d84;
+  --destructive: #ca4e59;
+  --border: #c5e0e3;
+  --ring: #18869d;
+
+  color-scheme: light;
+}
+
+/* Sunset Theme */
+:root[data-theme="sunset"] {
+  --background: #291b27;
+  --foreground: #ffe9da;
+  --primary: #ff956b;
+  --primary-foreground: #291b27;
+  --muted: #3c2734;
+  --muted-foreground: #d4a29b;
+  --destructive: #ff797c;
+  --border: #56343e;
+  --ring: #ff956b;
+
+  color-scheme: dark;
+}
+
+/* Sea Theme */
+:root[data-theme="sea"] {
+  --background: #102c35;
+  --foreground: #d8f3f1;
+  --primary: #62c7bf;
+  --primary-foreground: #102c35;
+  --muted: #1b3d47;
+  --muted-foreground: #91bfbd;
+  --destructive: #f08484;
+  --border: #28505a;
+  --ring: #62c7bf;
+
+  color-scheme: dark;
+}
+
+/* Lavender Theme */
+:root[data-theme="lavender"] {
+  --background: #211b2d;
+  --foreground: #f0e9ff;
+  --primary: #bda2ff;
+  --primary-foreground: #211b2d;
+  --muted: #302740;
+  --muted-foreground: #b8abd1;
+  --destructive: #ff94b8;
+  --border: #463959;
+  --ring: #bda2ff;
+
+  color-scheme: dark;
+}
+
+/* Cursor Theme */
+:root[data-theme="cursor"] {
+  --background: #1f1f1f;
+  --foreground: #d4d4d4;
+  --primary: #75beff;
+  --primary-foreground: #1f1f1f;
+  --muted: #292929;
+  --muted-foreground: #a8a8a8;
+  --destructive: #f14c4c;
+  --border: #3c3c3c;
+  --ring: #75beff;
+
+  color-scheme: dark;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
