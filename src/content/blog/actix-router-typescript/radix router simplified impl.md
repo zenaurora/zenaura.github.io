@@ -1,6 +1,6 @@
 ---
-title: "用 Radix Tree 给 Router 做索引：一个 TypeScript 简化实现"
-description: "从一棵压缩前缀树出发，实现路由的注册、分裂与精确查找，并看看它和顺序扫描 Router 的边界。"
+title: 用 Radix Tree 给 Router 做索引：一个 TypeScript 简化实现
+description: 从一棵压缩前缀树出发，实现路由的注册、分裂与精确查找，并看看它和顺序扫描 Router 的边界。
 date: 2026-08-18
 order: 2
 authors:
@@ -79,9 +79,9 @@ private commonPrefixLength(a: string, b: string): number {
 }
 ```
 
-例如 `apple` 与 `apply` 的结果是 `4`，`apple` 与 `app` 的结果是 `3`，`apple` 与 `banana` 则是 `0`。这一个数字足以把插入分成四类。
+例如 `apple` 与 `apply` 的结果是 `4`，`apple` 与 `app` 的结果是 `3`，`apple` 与 `banana` 则是 `0`。这一个数字足以把插入分成五种情形。
 
-## 插入：四种分支
+## 插入：五种情形
 
 公开的 `add` 只从根开始，真正的工作交给递归 `insert`：
 
@@ -91,14 +91,15 @@ public add(pattern: string, handler: T): void {
 }
 ```
 
-对父节点的每个孩子，比较 `child.prefix` 和新 `pattern` 的公共前缀长度。命中一个共享前缀后，只有下列四种情形。
+对父节点的每个孩子，比较 `child.prefix` 和新 `pattern` 的公共前缀长度。根据两者的关系，插入可以分成下列五种情形。
 
-| 关系 | 例子 | 要做的事 |
-| --- | --- | --- |
-| 完全相同 | `app` / `app` | 覆盖该节点的 handler |
-| 旧边是新 key 的前缀 | `app` / `apple` | 把 `le` 继续插入 `app` 的孩子 |
-| 新 key 是旧边的前缀 | `apple` / `app` | 将旧节点缩为 `app`，旧后缀 `le` 成为孩子 |
-| 只部分重合 | `apple` / `apply` | 提取共同部分 `appl`，分出 `e`、`y` 两个孩子 |
+| 关系           | 例子                | 要做的事                          |
+| ------------ | ----------------- | ----------------------------- |
+| 完全相同         | `app` / `app`     | 覆盖该节点的 handler                |
+| 旧边是新 key 的前缀 | `app` / `apple`   | 把 `le` 继续插入 `app` 的孩子         |
+| 新 key 是旧边的前缀 | `apple` / `app`   | 将旧节点缩为 `app`，旧后缀 `le` 成为孩子    |
+| 只部分重合        | `apple` / `apply` | 提取共同部分 `appl`，分出 `e`、`y` 两个孩子 |
+| 没有公共前缀        | `apple` / `banana` | 继续检查兄弟；均不匹配时追加一条新边       |
 
 没有任何公共前缀时，继续检查下一个兄弟；所有兄弟都不匹配，直接追加一条新边即可。
 
