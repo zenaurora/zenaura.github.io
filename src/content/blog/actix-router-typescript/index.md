@@ -299,7 +299,11 @@ recognize(router, "/user/42",            { roles: [] },       checkGuard);
 
 **没有优先级，只有顺序**。`/user/{id}` 和 `/user/me` 同时注册，命中谁取决于谁先 `add`。这是 Actix Web 的真实行为，没做 trie 之前也没有"静态优先"的魔法；如果业务上需要 `/user/me` 抢先，必须先注册、并且写一条同样字面的精确匹配。
 
-**`recognize` 是 `O(n)`**。每来一个请求都把注册的路由从头扫一遍，直到命中或全部失配。Actix Web 真正用于大型服务时，会在 `Router` 之上再叠一层 `RouterSet` / 索引结构，但那是性能优化、不是正确性问题。理解这层语义之后再谈索引，就知道索引其实是在不破坏"先注册先生效"的前提下，把 `O(n)` 压到 `O(log n)` 或 `O(1)`。
+**`recognize` 是 `O(n)`**。每来一个请求都把注册的路由从头扫一遍，直到命中或全部失配。理解这层语义之后再谈索引，就知道索引是在不破坏“先注册先生效”的前提下，尽量缩小候选集合；它不是把路由策略直接替换掉。
+
+:::tip[延伸阅读]
+[用 Radix Tree 给 Router 做索引：一个 TypeScript 简化实现 →](/blog/actix-router-typescript/radix-router-simplified-impl)
+:::
 
 ## 总结
 
