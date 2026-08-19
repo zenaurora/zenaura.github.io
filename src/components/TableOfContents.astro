@@ -11,6 +11,7 @@ type Section = {
 type Props = { title: string; sections: Section[] }
 
 const { title, sections } = Astro.props
+const firstGroupIndex = sections.findIndex(({ id }) => Boolean(id))
 ---
 
 <nav aria-label="Table of contents">
@@ -25,9 +26,9 @@ const { title, sections } = Astro.props
     <ChevronIcon aria-hidden="true" />
   </label>
   <ul data-bar>
-    {sections.map(({ id, label, open, headings }) =>
+    {sections.map(({ id, label, open, headings }, index) =>
         id ? (
-          <li data-group>
+          <li data-group data-first-group={index === firstGroupIndex || undefined}>
             {headings.length > 0 ? (
               <details open={open || undefined}>
                 <summary>
@@ -212,6 +213,17 @@ const { title, sections } = Astro.props
 
       &:not(:first-child) {
         margin-block-start: var(--space-2xs);
+      }
+
+      &[data-first-group] {
+        margin-block-start: var(--space-s);
+        padding-block-start: var(--space-xs);
+        border-block-start: 1px solid var(--border);
+      }
+
+      > a,
+      summary > a {
+        color: var(--foreground);
       }
 
       summary {
