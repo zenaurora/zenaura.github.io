@@ -16,28 +16,41 @@ for (const plan of NOW_PLANS) {
 }
 
 const groups = groupByStatus(NOW_PLANS)
+const counts = Object.fromEntries(
+  STATUS_ORDER.map((s) => [s, groups[s].length]),
+) as Record<(typeof STATUS_ORDER)[number], number>
 ---
 
 <Layout>
-  <MetaPage
-    slot="head"
-    title="Now"
-    description="近期在做的、暂停的、已经完成的，以及暂时放下的。"
-  />
+  <MetaPage slot="head" title="Now" description="近期在做的事情，按状态切换。" />
   <header>
     <h1>Now</h1>
-    <p>近期在做的、暂停的、已经完成的，以及暂时放下的。</p>
+    <p>近期在做的事情，按状态切换。</p>
   </header>
-  {STATUS_ORDER.map((status) => {
+  <now-tabs role="tablist" aria-label="按状态切换">
+    {STATUS_ORDER.map((status, i) => (
+      <button
+        type="button"
+        data-status={status}
+        aria-pressed={i === 0 ? "true" : "false"}
+      >
+        {STATUS_LABEL[status]}<sup>{counts[status]}</sup>
+      </button>
+    ))}
+  </now-tabs>
+
+  {STATUS_ORDER.map((status, i) => {
     const items = groups[status]
     return (
-      <section aria-labelledby={`now-${status}`}>
-        <h2 id={`now-${status}`}>
-          {STATUS_LABEL[status]}<sup>{items.length}</sup>
-        </h2>
+      <section
+        id={`panel-${status}`}
+        data-panel={status}
+        aria-label={STATUS_LABEL[status]}
+        hidden={i !== 0}
+      >
         {items.length > 0 ? (
           <ol>
-            {items.map((plan, i) => <PlanCard plan={plan} index={i} />)}
+            {items.map((plan, j) => <PlanCard plan={plan} index={j} />)}
           </ol>
         ) : (
           <p class="empty">暂无。</p>
@@ -46,6 +59,34 @@ const groups = groupByStatus(NOW_PLANS)
     )
   })}
 </Layout>
+
+<script>
+  const tabBar = document.querySelector<HTMLElement>("now-tabs")
+  const panels = document.querySelectorAll<HTMLElement>("[data-panel]")
+  const tabs = tabBar?.querySelectorAll<HTMLButtonElement>("button[data-status]")
+
+  function activate(status: string) {
+    for (const tab of tabs ?? []) {
+      tab.setAttribute("aria-pressed", String(tab.dataset.status === status))
+    }
+    for (const panel of panels) {
+      panel.hidden = panel.dataset.panel !== status
+    }
+    history.replaceState(null, "", `#${status}`)
+  }
+
+  tabBar?.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
+      "button[data-status]",
+    )
+    if (btn?.dataset.status) activate(btn.dataset.status)
+  })
+
+  const initial = location.hash.slice(1)
+  if (initial && [...(tabs ?? [])].some((t) => t.dataset.status === initial)) {
+    activate(initial)
+  }
+</script>
 
 <style>
   header {
@@ -63,21 +104,58 @@ const groups = groupByStatus(NOW_PLANS)
     }
   }
 
-  section + section {
-    margin-block-start: var(--space-l);
+  now-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-s);
+    margin-block-end: var(--space-l);
+    border-block-end: 1px solid var(--border);
+
+    button {
+      appearance: none;
+      cursor: pointer;
+      background: none;
+      border: none;
+      border-block-end: 2px solid transparent;
+      padding: var(--space-2xs) var(--space-3xs);
+      margin-block-end: -1px;
+      font: inherit;
+      font-size: var(--step--1);
+      color: var(--muted-foreground);
+      transition: color 0.2s ease, border-color 0.2s ease;
+
+      sup {
+        margin-inline-start: 0.4em;
+        font-size: 0.72em;
+        font-variant-numeric: tabular-nums;
+        opacity: 0.6;
+        font-weight: var(--font-weight-normal);
+      }
+
+      &:hover {
+        color: var(--foreground);
+      }
+
+      &[aria-pressed="true"] {
+        color: var(--foreground);
+        border-block-end-color: var(--foreground);
+      }
+    }
+
+    @media (width < 40rem) {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
   }
 
-  h2 {
-    font-size: var(--step-1);
-    font-weight: var(--font-weight-medium);
-    margin-block-end: var(--space-s);
-
-    sup {
-      margin-inline-start: 0.4em;
-      font-size: 0.72em;
-      font-variant-numeric: tabular-nums;
-      opacity: 0.6;
-      font-weight: var(--font-weight-normal);
+  section[data-panel] {
+    &[hidden] {
+      display: none;
     }
   }
 
