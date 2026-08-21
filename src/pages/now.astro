@@ -1,0 +1,95 @@
+---
+import MetaPage from "@/components/MetaPage.astro"
+import PlanCard from "@/components/PlanCard.astro"
+import Layout from "@/layouts/Layout.astro"
+import {
+  groupByStatus,
+  NOW_PLANS,
+  STATUS_LABEL,
+  STATUS_ORDER,
+} from "@/lib/now"
+
+for (const plan of NOW_PLANS) {
+  if (plan.status === "shipped" && !plan.finishedAt) {
+    console.warn(`[now] shipped plan "${plan.id}" is missing finishedAt`)
+  }
+}
+
+const groups = groupByStatus(NOW_PLANS)
+---
+
+<Layout>
+  <MetaPage
+    slot="head"
+    title="Now"
+    description="近期在做的、暂停的、已经完成的，以及暂时放下的。"
+  />
+  <header>
+    <h1>Now</h1>
+    <p>近期在做的、暂停的、已经完成的，以及暂时放下的。</p>
+  </header>
+  {STATUS_ORDER.map((status) => {
+    const items = groups[status]
+    return (
+      <section aria-labelledby={`now-${status}`}>
+        <h2 id={`now-${status}`}>
+          {STATUS_LABEL[status]}<sup>{items.length}</sup>
+        </h2>
+        {items.length > 0 ? (
+          <ol>
+            {items.map((plan, i) => <PlanCard plan={plan} index={i} />)}
+          </ol>
+        ) : (
+          <p class="empty">暂无。</p>
+        )}
+      </section>
+    )
+  })}
+</Layout>
+
+<style>
+  header {
+    margin-block-end: var(--space-l);
+
+    h1 {
+      font-size: var(--step-3);
+      line-height: calc(var(--leading-offset) + 1em);
+      font-weight: var(--font-weight-medium);
+    }
+
+    p {
+      margin-block-start: var(--space-2xs);
+      color: var(--muted-foreground);
+    }
+  }
+
+  section + section {
+    margin-block-start: var(--space-l);
+  }
+
+  h2 {
+    font-size: var(--step-1);
+    font-weight: var(--font-weight-medium);
+    margin-block-end: var(--space-s);
+
+    sup {
+      margin-inline-start: 0.4em;
+      font-size: 0.72em;
+      font-variant-numeric: tabular-nums;
+      opacity: 0.6;
+      font-weight: var(--font-weight-normal);
+    }
+  }
+
+  ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .empty {
+    color: var(--muted-foreground);
+    font-size: var(--step--1);
+    padding-block: var(--space-s);
+  }
+</style>

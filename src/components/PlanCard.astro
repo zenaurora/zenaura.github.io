@@ -1,0 +1,166 @@
+---
+import {
+  formatRelative,
+  shortenUrl,
+  STATUS_ACCENT,
+  type Plan,
+} from "@/lib/now"
+
+interface Props {
+  plan: Plan
+  index: number
+}
+
+const { plan, index } = Astro.props
+const accent = STATUS_ACCENT[plan.status]
+const dateField =
+  plan.status === "shipped" && plan.finishedAt
+    ? `finished ${formatRelative(plan.finishedAt)}`
+    : `added ${formatRelative(plan.addedAt)}`
+const isExternal = plan.deliverable?.kind === "external"
+---
+
+<li
+  data-status={plan.status}
+  style={`--accent: ${accent}; --stagger: ${Math.min(index, 8)}`}
+>
+  <plan-rail aria-hidden="true">
+    <plan-dot />
+  </plan-rail>
+  <plan-body>
+    <plan-title>
+      <span>{plan.title}</span>
+      {plan.deliverable && (
+        <plan-deliverable>
+          → <a
+            href={plan.deliverable.url}
+            target={isExternal ? "_blank" : undefined}
+            rel="noopener noreferrer"
+          >{shortenUrl(plan.deliverable.url)}</a>
+        </plan-deliverable>
+      )}
+    </plan-title>
+    <plan-meta>
+      <plan-date>{dateField}</plan-date>
+      {plan.tags?.map((tag) => <span>#{tag}</span>)}
+    </plan-meta>
+    {plan.reflection && <plan-reflection>{plan.reflection}</plan-reflection>}
+  </plan-body>
+</li>
+
+<style>
+  li {
+    --accent: var(--foreground);
+
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    column-gap: var(--space-s);
+    padding-block: var(--space-s);
+    border-block-end: 1px solid var(--border);
+
+    &:last-child {
+      border-block-end: none;
+    }
+  }
+
+  plan-rail {
+    padding-block-start: 0.5rem;
+  }
+
+  plan-dot {
+    display: block;
+    inline-size: 0.625rem;
+    block-size: 0.625rem;
+    border-radius: var(--radius-full);
+    border: 1.5px solid var(--accent);
+    background: var(--background);
+  }
+
+  plan-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+
+  plan-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2xs);
+    font-size: var(--step-0);
+    line-height: calc(var(--leading-offset) + 1em);
+    font-weight: var(--font-weight-medium);
+  }
+
+  plan-deliverable {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25em;
+    padding: 0.12em 0.55em;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    font-weight: var(--font-weight-normal);
+    color: var(--muted-foreground);
+    text-decoration: none;
+    transition:
+      transform 0.25s ease,
+      color 0.25s ease,
+      border-color 0.25s ease;
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    &:hover {
+      color: var(--foreground);
+      border-color: color-mix(in oklab, var(--accent) 40%, var(--border));
+      transform: translateY(-1px);
+    }
+  }
+
+  plan-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2xs);
+    font-size: var(--step--1);
+    color: var(--muted-foreground);
+  }
+
+  plan-date {
+    font-variant-numeric: tabular-nums;
+  }
+
+  plan-reflection {
+    font-size: var(--step--1);
+    color: var(--muted-foreground);
+    font-style: italic;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    li {
+      animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: calc(var(--stagger, 0) * 50ms);
+    }
+
+    @keyframes rise-in {
+      from {
+        opacity: 0;
+        transform: translateY(0.5rem);
+      }
+    }
+  }
+
+  @media (width < 40rem) {
+    li {
+      grid-template-columns: 1fr;
+    }
+
+    plan-rail {
+      display: none;
+    }
+  }
+</style>
