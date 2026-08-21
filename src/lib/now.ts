@@ -139,14 +139,6 @@ export function groupByStatus(plans: Plan[]): Record<PlanStatus, Plan[]> {
   return groups
 }
 
-export function formatRelative(iso: string, now = new Date()): string {
-  const then = new Date(iso)
-  const diffDays = Math.round((now.getTime() - then.getTime()) / 86_400_000)
-  const rtf = new Intl.RelativeTimeFormat("zh-CN", { numeric: "auto" })
-  if (Math.abs(diffDays) < 30) return rtf.format(-diffDays, "day")
-  return rtf.format(-Math.round(diffDays / 30), "month")
-}
-
 export function shortenUrl(url: string): string {
   if (url.startsWith("/")) return url
   try {

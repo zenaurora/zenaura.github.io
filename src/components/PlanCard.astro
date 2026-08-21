@@ -1,10 +1,6 @@
 ---
-import {
-  formatRelative,
-  shortenUrl,
-  STATUS_ACCENT,
-  type Plan,
-} from "@/lib/now"
+import { formatDate } from "@/lib/utils"
+import { shortenUrl, STATUS_ACCENT, type Plan } from "@/lib/now"
 
 interface Props {
   plan: Plan
@@ -13,10 +9,8 @@ interface Props {
 
 const { plan, index } = Astro.props
 const accent = STATUS_ACCENT[plan.status]
-const dateField =
-  plan.status === "shipped" && plan.finishedAt
-    ? `finished ${formatRelative(plan.finishedAt)}`
-    : `added ${formatRelative(plan.addedAt)}`
+const dateValue =
+  plan.status === "shipped" && plan.finishedAt ? plan.finishedAt : plan.addedAt
 const isExternal = plan.deliverable?.kind === "external"
 ---
 
@@ -41,7 +35,9 @@ const isExternal = plan.deliverable?.kind === "external"
       )}
     </plan-title>
     <plan-meta>
-      <plan-date>{dateField}</plan-date>
+      <plan-date>
+        <time datetime={dateValue}>{formatDate(new Date(dateValue))}</time>
+      </plan-date>
       {plan.tags?.map((tag) => <span>#{tag}</span>)}
     </plan-meta>
     {plan.reflection && <plan-reflection>{plan.reflection}</plan-reflection>}
@@ -131,7 +127,15 @@ const isExternal = plan.deliverable?.kind === "external"
   }
 
   plan-date {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1em 0.6em;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
     font-variant-numeric: tabular-nums;
+    color: var(--muted-foreground);
   }
 
   plan-reflection {
