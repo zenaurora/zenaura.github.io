@@ -66,11 +66,7 @@ enum Pattern {
 ```
 TS的枚举enum没有rust这样强大，但是TS有很好用的和类型，使用`|`来实现，这点其实我也是很喜欢的。
 
-不过相应地，discriminated union 还是要靠 `kind` 字段来"打标签"，匹配的时候也只能写 `if (r.kind === '...')` 链——`kind` 字段到底是不是多余的、有没有更好的写法，这个话题我另开了一篇 sub blog：
-
-:::tip[延伸阅读]
-[绕过 `kind` 字段：ts-pattern、never 与 Pattern Matching 提案 →](/blog/actix-router-typescript/kind-field-alternatives)
-:::
+不过相应地，discriminated union 还是要靠 `kind` 字段来"打标签"，匹配的时候也只能写 `if (r.kind === '...')` 链。
 
 ## 把模式字符串编译成 `ResourceDef`
 
@@ -172,11 +168,10 @@ function matchPath(rdef: ResourceDef, path: string): {
 
 读起来几乎不用解释：
 
-- 静态模式直接 `===`，没有正则。
-- 动态模式跑 `RegExp.exec`，没命中就 `matched: false`。
+- 静态模式直接判断是不是一样，动态模式需要判断正则能否match
 - 命中后，把 `names[i]` 映射到 `match[i + 1]`。这就是为什么 `names` 的顺序必须和捕获组顺序严格一致——这个一对一映射是整个机制的核心约定。
 
-- 感觉没有直接的模式匹配的话，还要另加一个`kind`字段，去做if判断，感觉有点麻烦，我问了一下AI有没有相关的解决办法：
+`kind` 字段作为判别标签仍然是 TypeScript 最常见的写法；如果想把 `if` 链收口成穷尽匹配，可以继续看这篇延伸：[绕过 `kind` 字段：ts-pattern、never 与 Pattern Matching 提案 →](/blog/actix-router-typescript/kind-field-alternatives)。
 
 ## 容器：`Router<T, U>`
 
