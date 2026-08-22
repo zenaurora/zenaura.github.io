@@ -1,0 +1,32 @@
+/* Theme-specific treatments live here so the base editorial layout and the
+ * rest of the theme catalog remain untouched. */
+
+/* Pastel Mist keeps its five color pairings at the quiet page edges. */
+:root[data-theme="pastel-mist"] body::before {
+  background:
+    radial-gradient(
+      34rem 22rem at 7% 4%,
+      color-mix(in oklab, var(--pastel-lemon) 36%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      30rem 24rem at 96% 12%,
+      color-mix(in oklab, var(--pastel-peach) 28%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      28rem 24rem at 4% 58%,
+      color-mix(in oklab, var(--pastel-melon) 26%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      32rem 24rem at 94% 68%,
+      color-mix(in oklab, var(--pastel-orange) 20%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      38rem 24rem at 50% 108%,
+      color-mix(in oklab, var(--pastel-smoke) 18%, transparent),
+      transparent 74%
+    );
+}

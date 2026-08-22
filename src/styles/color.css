@@ -274,6 +274,41 @@
   color-scheme: light;
 }
 
+/* Pastel Mist Theme */
+:root[data-theme="pastel-mist"] {
+  /* Five low-saturation pairings form the theme's watercolor palette. */
+  --pastel-lemon: #f4e7a1;
+  --pastel-haze-blue: #7b93a8;
+  --pastel-peach: #ebc0c1;
+  --pastel-indigo: #596e9b;
+  --pastel-melon: #cde0b5;
+  --pastel-stone: #87a5a3;
+  --pastel-orange: #eaa38f;
+  --pastel-smoke: #9a8daa;
+  --pastel-cream: #fff7d6;
+  --pastel-charcoal: #444a49;
+
+  --background: var(--pastel-cream);
+  --foreground: var(--pastel-charcoal);
+  --primary: var(--pastel-indigo);
+  --primary-foreground: #fffaf0;
+  --muted: color-mix(
+    in oklab,
+    var(--pastel-melon) 48%,
+    var(--pastel-cream)
+  );
+  --muted-foreground: #647371;
+  --destructive: #ad4e48;
+  --border: color-mix(
+    in oklab,
+    var(--pastel-stone) 38%,
+    var(--pastel-cream)
+  );
+  --ring: var(--pastel-indigo);
+
+  color-scheme: light;
+}
+
 /* Sunset Theme */
 :root[data-theme="sunset"] {
   --background: #291b27;

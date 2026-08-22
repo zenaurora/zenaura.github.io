@@ -5,7 +5,7 @@ import {
   type SatteriExpressiveCodeOptions,
 } from "satteri-expressive-code"
 
-export const LIGHT_THEMES = ["light", "solarized-light", "lake"]
+export const LIGHT_THEMES = ["light", "solarized-light", "lake", "pastel-mist"]
 export const DARK_THEMES = [
   "dark",
   "gruvbox-dark",
