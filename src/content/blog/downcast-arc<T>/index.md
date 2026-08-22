@@ -40,7 +40,7 @@ unsafe fn downcast(arc: Arc<dyn MyTrait>) -> Arc<MyStruct> {
 
 作者为了严谨起见，把这个代码放到Compiler Explorer里面生成了汇编,查看向上转型和向下转型的区别：
 
-```assembly
+```asm
 // upcast
 mov rax, rdi
 lea rdx, [rip + .vtable]
