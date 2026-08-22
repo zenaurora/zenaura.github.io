@@ -67,6 +67,33 @@ const daily = defineCollection({
   }),
 })
 
+const now = defineCollection({
+  loader: glob({
+    pattern: "*/index.md",
+    base: "./src/content/now",
+  }),
+  schema: z.object({
+    plans: z
+      .array(
+        z.object({
+          id: z.string(),
+          title: z.string(),
+          addedAt: z.coerce.date(),
+          finishedAt: z.coerce.date().optional(),
+          deliverable: z
+            .object({
+              url: z.url().or(z.string().startsWith("/")),
+              kind: z.enum(["post", "paper", "project", "external"]),
+            })
+            .optional(),
+          reflection: z.string().optional(),
+          tags: z.array(z.string()).optional(),
+        }),
+      )
+      .default([]),
+  }),
+})
+
 const projects = defineCollection({
   loader: glob({
     pattern: "**/[^_]*.md",
@@ -84,4 +111,4 @@ const projects = defineCollection({
     }),
 })
 
-export const collections = { blog, papers, authors, projects, daily }
+export const collections = { blog, papers, authors, projects, daily, now }

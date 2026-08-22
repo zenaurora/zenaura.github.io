@@ -4,30 +4,49 @@ import PlanCard from "@/components/PlanCard.astro"
 import Layout from "@/layouts/Layout.astro"
 import {
   groupByStatus,
-  NOW_PLANS,
+  type Plan,
+  type PlanStatus,
   STATUS_LABEL,
   STATUS_ORDER,
 } from "@/lib/now"
+import { getCollection } from "astro:content"
 
-for (const plan of NOW_PLANS) {
+const sections = await getCollection("now")
+const plans = sections.flatMap(({ id, data }) => {
+  const status = id.split("/")[0] as PlanStatus
+  if (!STATUS_ORDER.includes(status)) {
+    throw new Error(`[now] unknown status directory: "${status}"`)
+  }
+
+  return data.plans.map(
+    (plan): Plan => ({
+      ...plan,
+      status,
+      addedAt: plan.addedAt.toISOString().slice(0, 10),
+      finishedAt: plan.finishedAt?.toISOString().slice(0, 10),
+    }),
+  )
+})
+
+for (const plan of plans) {
   if (plan.status === "shipped" && !plan.finishedAt) {
     console.warn(`[now] shipped plan "${plan.id}" is missing finishedAt`)
   }
 }
 
-const groups = groupByStatus(NOW_PLANS)
+const groups = groupByStatus(plans)
 const counts = Object.fromEntries(
   STATUS_ORDER.map((s) => [s, groups[s].length]),
 ) as Record<(typeof STATUS_ORDER)[number], number>
 ---
 
 <Layout>
-  <MetaPage slot="head" title="Now" description="近期在做的事情，按状态切换。" />
+  <MetaPage slot="head" title="Now" description="What I'm working on now." />
   <header>
     <h1>Now</h1>
-    <p>近期在做的事情，按状态切换。</p>
+    <p>What I'm working on now.</p>
   </header>
-  <now-tabs role="tablist" aria-label="按状态切换">
+  <div class="status-buttons" role="group" aria-label="Plan status">
     {STATUS_ORDER.map((status, i) => (
       <button
         type="button"
@@ -37,7 +56,7 @@ const counts = Object.fromEntries(
         {STATUS_LABEL[status]}<sup>{counts[status]}</sup>
       </button>
     ))}
-  </now-tabs>
+  </div>
 
   {STATUS_ORDER.map((status, i) => {
     const items = groups[status]
@@ -53,7 +72,7 @@ const counts = Object.fromEntries(
             {items.map((plan, j) => <PlanCard plan={plan} index={j} />)}
           </ol>
         ) : (
-          <p class="empty">暂无。</p>
+          <p class="empty">No plans yet.</p>
         )}
       </section>
     )
@@ -61,13 +80,18 @@ const counts = Object.fromEntries(
 </Layout>
 
 <script>
-  const tabBar = document.querySelector<HTMLElement>("now-tabs")
+  const statusBar = document.querySelector<HTMLElement>(".status-buttons")
   const panels = document.querySelectorAll<HTMLElement>("[data-panel]")
-  const tabs = tabBar?.querySelectorAll<HTMLButtonElement>("button[data-status]")
+  const buttons = statusBar?.querySelectorAll<HTMLButtonElement>(
+    "button[data-status]",
+  )
 
   function activate(status: string) {
-    for (const tab of tabs ?? []) {
-      tab.setAttribute("aria-pressed", String(tab.dataset.status === status))
+    for (const button of buttons ?? []) {
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.status === status),
+      )
     }
     for (const panel of panels) {
       panel.hidden = panel.dataset.panel !== status
@@ -75,7 +99,7 @@ const counts = Object.fromEntries(
     history.replaceState(null, "", `#${status}`)
   }
 
-  tabBar?.addEventListener("click", (e) => {
+  statusBar?.addEventListener("click", (e) => {
     const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
       "button[data-status]",
     )
@@ -83,7 +107,10 @@ const counts = Object.fromEntries(
   })
 
   const initial = location.hash.slice(1)
-  if (initial && [...(tabs ?? [])].some((t) => t.dataset.status === initial)) {
+  if (
+    initial &&
+    [...(buttons ?? [])].some((button) => button.dataset.status === initial)
+  ) {
     activate(initial)
   }
 </script>
@@ -104,7 +131,7 @@ const counts = Object.fromEntries(
     }
   }
 
-  now-tabs {
+  .status-buttons {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-s);
@@ -122,7 +149,9 @@ const counts = Object.fromEntries(
       font: inherit;
       font-size: var(--step--1);
       color: var(--muted-foreground);
-      transition: color 0.2s ease, border-color 0.2s ease;
+      transition:
+        color 0.2s ease,
+        border-color 0.2s ease;
 
       sup {
         margin-inline-start: 0.4em;
