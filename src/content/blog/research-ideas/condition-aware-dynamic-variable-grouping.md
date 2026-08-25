@@ -10,7 +10,6 @@ tags:
   - Research Ideas
   - Channel Dependency
   - Dynamic Grouping
-protected: true
 ---
 
 ## 核心思想

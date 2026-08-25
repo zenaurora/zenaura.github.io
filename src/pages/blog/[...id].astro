@@ -1,12 +1,10 @@
 ---
 import MetaPost from "@/components/MetaPost.astro"
-import PasswordGate from "@/components/PasswordGate.astro"
 import PostActions from "@/components/PostActions.astro"
 import ScrollToTop from "@/components/ScrollToTop.astro"
 import SeriesReader from "@/components/SeriesReader.astro"
 import TableOfContents from "@/components/TableOfContents.astro"
 import Layout from "@/layouts/Layout.astro"
-import { PROTECTED_CONTENT } from "@/consts"
 import { getPosts, getSubposts, pageTitle } from "@/lib/content"
 import { formatDate, isSubpost, subpostSlug } from "@/lib/utils"
 import { isFullyAiTag } from "@/lib/tags"
@@ -34,8 +32,6 @@ type Props = {
 
 const { post, chain, prev, next } = Astro.props
 const [parent] = chain
-const isProtected = Boolean(parent.data.protected)
-const protectedContent = PROTECTED_CONTENT.researchIdeas
 const rendered = await Promise.all(
   chain.map(async (entry) => ({
     entry,
@@ -67,7 +63,7 @@ if (isSubpost(post.id)) {
     post={post}
     canonical={isSubpost(post.id) ? `/blog/${parent.id}` : undefined}
   />
-  {hasToc && !isProtected && (
+  {hasToc && (
       <TableOfContents
         slot="toc"
         title={parent.data.title}
@@ -76,17 +72,7 @@ if (isSubpost(post.id)) {
     )}
   <PostActions slot="actions" prev={prev} next={next} />
   <ScrollToTop floating />
-  {isProtected && (
-    <PasswordGate
-      passwordHash={protectedContent.passwordHash}
-      storageKey={protectedContent.storageKey}
-      scope={protectedContent.parentId}
-    />
-  )}
-  <section
-    data-locked-content={isProtected ? protectedContent.parentId : undefined}
-    hidden={isProtected || undefined}
-  >
+  <section>
     {rendered.map(({ entry, Content, authors }, i) => (
       <article
         id={i === 0 ? undefined : subpostSlug(entry.id)}

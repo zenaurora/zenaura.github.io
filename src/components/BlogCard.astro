@@ -11,7 +11,6 @@ type Props = {
 
 const { post, basePath = "/blog" } = Astro.props
 const authors = await getEntries(post.data.authors)
-const isProtected = "protected" in post.data && post.data.protected
 ---
 
 <li>
@@ -23,7 +22,6 @@ const isProtected = "protected" in post.data && post.data.protected
   <entry-info>
     <entry-title>
       <a href={`${basePath}/${post.id}`}>{post.data.title}</a>
-      {isProtected && <span aria-label="受密码保护">Locked</span>}
     </entry-title>
     <entry-meta>
       {authors.length > 0 && (
@@ -62,7 +60,7 @@ const isProtected = "protected" in post.data && post.data.protected
         )}
     </entry-meta>
     <p>
-      {isProtected ? "受密码保护，输入密码后查看内容。" : post.data.description}
+      {post.data.description}
     </p>
   </entry-info>
 </li>

@@ -9,7 +9,6 @@ tags:
   - Research Ideas
   - Non-stationarity
   - Multivariate Forecasting
-protected: true
 ---
 
 ## 总体动机
@@ -106,4 +105,3 @@ $$
 $$
 Z_n = Encoder_{\mu}(X) + ϵ ⊙ Softplus(Encoder_\sigma(X))
 $$
-

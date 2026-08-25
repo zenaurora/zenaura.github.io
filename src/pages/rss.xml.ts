@@ -4,7 +4,7 @@ import rss from "@astrojs/rss"
 import type { APIContext } from "astro"
 
 export async function GET(context: APIContext) {
-  const posts = (await getPosts()).filter((post) => !post.data.protected)
+  const posts = await getPosts()
   return rss({
     title: SITE.title,
     description: SITE.description,

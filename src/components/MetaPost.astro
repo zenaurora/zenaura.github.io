@@ -19,19 +19,14 @@ const canonical = new URL(Astro.props.canonical ?? Astro.url.pathname, base)
 const ogImage = image
   ? new URL(image.src, base)
   : new URL(SITE.defaultPostImage, base)
-const isProtected = "protected" in post.data && post.data.protected
-const publicDescription = isProtected
-  ? "受密码保护的内容。输入密码后查看。"
-  : description
 ---
 
 <title>{pageTitle(title)}</title>
-<meta name="description" content={publicDescription}>
+<meta name="description" content={description}>
 <link rel="canonical" href={canonical}>
-{isProtected && <meta name="robots" content="noindex, nofollow" />}
 
 <meta property="og:title" content={title}>
-<meta property="og:description" content={publicDescription}>
+<meta property="og:description" content={description}>
 <meta property="og:type" content="article">
 <meta property="og:url" content={url}>
 <meta property="og:site_name" content={SITE.title}>
@@ -41,7 +36,7 @@ const publicDescription = isProtected
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content={title}>
-<meta name="twitter:description" content={publicDescription}>
+<meta name="twitter:description" content={description}>
 <meta name="twitter:image" content={ogImage}>
 <meta name="twitter:image:alt" content={title}>
 {authorNames.length > 0 && (
