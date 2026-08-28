@@ -1,0 +1,116 @@
+---
+import ArrowRight from "@/assets/icons/arrow-right.svg"
+import MetaPage from "@/components/MetaPage.astro"
+import { TUTORS } from "@/consts"
+import Layout from "@/layouts/Layout.astro"
+---
+
+<Layout>
+  <MetaPage
+    slot="head"
+    title="Tutors"
+    description="Standalone learning guides from maokaihe's blog."
+  />
+  <section class="tutor-index">
+    <header>
+      <h1>Tutors</h1>
+      <p>
+        从博客内容延伸出的独立学习界面。每个 Tutor 都有自己的结构与阅读体验。
+      </p>
+    </header>
+
+    <ul>
+      {TUTORS.map((tutor) => (
+        <li>
+          <a href={tutor.href}>
+            <span>
+              <strong>{tutor.label}</strong>
+              <small>{tutor.description}</small>
+            </span>
+            <ArrowRight aria-hidden="true" />
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Layout>
+
+<style>
+  .tutor-index header {
+    max-inline-size: 42rem;
+  }
+
+  h1 {
+    color: var(--foreground);
+    font-size: var(--step-5);
+    letter-spacing: -0.035em;
+  }
+
+  header p {
+    margin-block-start: var(--space-xs);
+    color: var(--muted-foreground);
+    line-height: 1.65;
+  }
+
+  ul {
+    margin-block-start: var(--space-xl);
+    border-block-start: 1px solid var(--border);
+  }
+
+  li {
+    border-block-end: 1px solid var(--border);
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-m);
+    padding-block: var(--space-m);
+    color: var(--foreground);
+    text-decoration: none;
+    transition: padding-inline 180ms ease;
+
+    &:hover {
+      padding-inline: var(--space-xs);
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+
+  a span,
+  small {
+    display: block;
+  }
+
+  strong {
+    font-size: var(--step-1);
+    font-weight: var(--font-weight-medium);
+  }
+
+  small {
+    margin-block-start: var(--space-3xs);
+    color: var(--muted-foreground);
+    line-height: 1.55;
+  }
+
+  svg {
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    flex: 0 0 auto;
+    transition: transform 180ms ease;
+  }
+
+  a:hover svg {
+    transform: translateX(0.25rem);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    a,
+    svg {
+      transition: none;
+    }
+  }
+</style>

@@ -10,6 +10,7 @@ import { calloutDirective } from "./src/lib/callout"
 import { externalLinks } from "./src/lib/external-links"
 import { headingNamespace } from "./src/lib/heading-namespace"
 import { headingAnchors } from "./src/lib/heading-anchors"
+import { tutorSites } from "./src/integrations/tutor-sites"
 
 export default defineConfig({
   base: "/",
@@ -19,6 +20,7 @@ export default defineConfig({
   compressHTML: true,
   prefetch: { prefetchAll: true },
   integrations: [
+    tutorSites(),
     sitemap({
       filter: (page) =>
         !/\/blog\/[^/]+\/[^/]+\/?$/.test(page) &&
@@ -31,7 +33,12 @@ export default defineConfig({
     processor: satteri({
       features: { directive: true, math: true },
       mdastPlugins: [calloutDirective, inlineExpressiveCode, temmlMath],
-      hastPlugins: [externalLinks, blockExpressiveCode, headingNamespace, headingAnchors],
+      hastPlugins: [
+        externalLinks,
+        blockExpressiveCode,
+        headingNamespace,
+        headingAnchors,
+      ],
     }),
   },
 })

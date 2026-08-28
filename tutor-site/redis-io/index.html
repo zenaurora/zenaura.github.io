@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="由四篇 Redis 博客整理出的 I/O 模型静态自学页：先建立知识地图，再用自测题检验理解。"
+    >
+    <title>Redis I/O：从就绪到完成</title>
+    <link rel="stylesheet" href="assets/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="shell topbar-inner">
+        <div class="topbar-start">
+          <a class="back-link" href="/" aria-label="返回博客主页">
+            <svg viewBox="0 0 256 256" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M228 128a12 12 0 0 1-12 12H69l51.52 51.51a12 12 0 0 1-17 17l-72-72a12 12 0 0 1 0-17l72-72a12 12 0 0 1 17 17L69 116h147a12 12 0 0 1 12 12"
+              />
+            </svg>
+            <span>返回博客</span>
+          </a>
+          <span class="topbar-divider" aria-hidden="true"></span>
+          <a class="brand" href="#top">Redis I/O Tutor</a>
+        </div>
+        <nav aria-label="页面导航">
+          <a href="#map">知识地图</a>
+          <a href="#lessons">课程</a>
+          <a href="#quiz">自测</a>
+          <a href="#sources">来源</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="shell">
+          <div class="eyebrow">静态自学实验 / 4 篇博客 / 6 个知识点</div>
+          <h1>Redis I/O：<br>从就绪到完成</h1>
+          <p class="lede">
+            不背术语表。沿着“谁等待、谁读取、通知的是什么”这三个问题，串起 Redis
+            的单线程执行、I/O 多路复用、epoll 与 Reactor / Proactor。
+          </p>
+          <div class="hero-meta" aria-label="课程属性">
+            <span class="tag">面试复习</span>
+            <span class="tag">约 25 分钟</span>
+            <span class="tag">无需联网</span>
+            <span class="tag">不保存进度</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="map">
+        <div class="shell">
+          <div class="section-head">
+            <div class="section-kicker">01 / Knowledge map</div>
+            <div>
+              <h2>先看关系，再学细节</h2>
+              <p class="section-intro">
+                顺序不是照抄文件目录，而是按先修关系重排。每一项只承担一个可检验的学习目标。
+              </p>
+            </div>
+          </div>
+          <div class="bento">
+            <a class="card map-card" href="#lesson-1">
+              <span class="number">01</span><span class="type">概念</span>
+              <h3>Redis 的快，不是“单线程”三个字</h3>
+              <p>区分命令执行主线与整个进程，认识顺序执行的收益和瓶颈。</p>
+            </a>
+            <a class="card map-card" href="#lesson-2">
+              <span class="number">02</span><span class="type">概念</span>
+              <h3>I/O 的两个阶段</h3>
+              <p>等待数据；把数据复制到用户缓冲区。</p>
+            </a>
+            <a class="card map-card" href="#lesson-3">
+              <span class="number">03</span><span class="type">概念</span>
+              <h3>多路复用仍是同步 I/O</h3>
+              <p>就绪通知没有替应用完成读取。</p>
+            </a>
+            <a class="card map-card" href="#lesson-4">
+              <span class="number">04</span><span class="type">判断</span>
+              <h3>select、poll、epoll</h3>
+              <p>从传递全集、线性扫描走向注册关注与 ready list。</p>
+            </a>
+            <a class="card map-card" href="#lesson-5">
+              <span class="number">05</span><span class="type">过程</span>
+              <h3>LT 与 ET</h3>
+              <p>ET 为什么必须配合非阻塞，并一直读到 EAGAIN。</p>
+            </a>
+            <a class="card map-card" href="#lesson-6">
+              <span class="number">06</span><span class="type">判断</span>
+              <h3>Reactor 与 Proactor</h3>
+              <p>辨认“就绪事件”和“完成事件”，判断 Handler 还要不要 read。</p>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="shell">
+          <div class="section-head">
+            <div class="section-kicker">02 / Scope</div>
+            <div><h2>本次实验的边界</h2></div>
+          </div>
+          <div class="scope-grid">
+            <article class="card">
+              <h3>纳入</h3>
+              <ul>
+                <li>Redis 高性能因素及“单线程”的准确含义</li>
+                <li>阻塞、非阻塞、多路复用、异步 I/O</li>
+                <li>select / poll / epoll，LT / ET</li>
+                <li>Reactor / Proactor 的事件语义</li>
+              </ul>
+            </article>
+            <aside class="card note">
+              <h3>有意不纳入</h3>
+              <p>
+                <code>index.md</code>
+                中 RDB、AOF 与 COW
+                的段落属于持久化主线，与这三篇网络子文没有先修关系。本次不扩写，避免课程主题漂移。
+              </p>
+              <p class="meta">
+                目标读者：已有基本进程、线程、socket 概念的后端开发者
+              </p>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <div id="lessons">
+        <section class="section lesson" id="lesson-1">
+          <div class="shell lesson-layout">
+            <aside class="lesson-aside">
+              <div class="lesson-number">01</div>
+              <h2>Redis 的执行模型</h2>
+              <span class="type">概念</span>
+              <p class="objective">
+                目标：能解释“命令主要单线程执行”，并指出它为什么既是优势也是风险。
+              </p>
+            </aside>
+            <article class="prose">
+              <div class="think">
+                <span class="callout-title"
+                  >先想一下</span
+                >如果单线程不会并行执行命令，为什么它反而可能更快？它最怕哪类命令？
+              </div>
+              <h3>四个因素一起工作</h3>
+              <p>
+                博客把 Redis
+                的速度归因于内存访问、高效数据结构、命令顺序执行，以及非阻塞 I/O
+                + 多路复用。单线程只描述大部分命令的执行路径，不等于整个 Redis
+                进程只有一条线程。
+              </p>
+              <p>
+                顺序执行减少命令路径中的锁竞争、调度和上下文切换，也让单条命令不被另一条命令插入。但同一性质也形成队头阻塞：一个大
+                Key 或慢命令占住主线程，后续客户端都要等。
+              </p>
+              <div class="misconception">
+                <span class="callout-title">常见误区</span>“Redis
+                单线程，所以后台持久化和网络读写也都在同一个线程。”博客明确区分了主线程命令执行、后台任务和
+                Redis 6 起可选的 I/O 线程。
+              </div>
+              <div class="check">
+                <span class="callout-title">自检</span>
+                <details>
+                  <summary>为什么“没有锁竞争”不能推出“任何命令都快”？</summary>
+                  <div>
+                    因为顺序执行只减少并发协调成本；一条本身耗时的命令仍会独占主执行路径，并把等待传播给后面的请求。
+                  </div>
+                </details>
+                <details>
+                  <summary>请用一句话改写“Redis 是单线程”。</summary>
+                  <div>
+                    较准确的表述是：Redis
+                    的大部分命令主要由主线程顺序执行，但进程还会用后台线程，并可用
+                    I/O 线程分担部分网络读写。
+                  </div>
+                </details>
+              </div>
+              <p class="source-ref">
+                来源：src/content/blog/redis-interview/index.md，第 13-32 行
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section lesson" id="lesson-2">
+          <div class="shell lesson-layout">
+            <aside class="lesson-aside">
+              <div class="lesson-number">02</div>
+              <h2>I/O 的两个阶段</h2>
+              <span class="type">概念</span>
+              <p class="objective">
+                先修：01。目标：用两个阶段判断一个网络读取模型是阻塞、非阻塞还是异步。
+              </p>
+            </aside>
+            <article class="prose">
+              <div class="think">
+                <span class="callout-title">先想一下</span><code>recv()</code>
+                在“数据还没来”和“数据已经到内核”时，各自在等什么？
+              </div>
+              <h3>不要把“不等待”与“异步”混为一谈</h3>
+              <p>
+                接收网络数据可以拆成两个阶段：第一阶段等待数据进入内核 socket
+                缓冲区；第二阶段把数据交到用户缓冲区。同步非阻塞 I/O
+                只让第一阶段在未就绪时立即返回
+                <code>EAGAIN</code>，应用仍需反复查询，并亲自调用
+                <code>recv()</code>
+                完成第二阶段。
+              </p>
+              <div class="io-flow" aria-label="网络数据从网卡流向程序的示意图">
+                <svg viewBox="0 0 760 126" role="img">
+                  <title>网络数据从网卡经过内核缓冲区到用户缓冲区</title>
+                  <g fill="none" stroke="#b7b2a9" stroke-width="2">
+                    <path d="M150 62H220M390 62H460M630 62H694" />
+                    <path d="m211 56 9 6-9 6M451 56l9 6-9 6M685 56l9 6-9 6" />
+                  </g>
+                  <g
+                    font-family="ui-sans-serif, sans-serif"
+                    font-size="15"
+                    fill="#2f3437"
+                    text-anchor="middle"
+                  >
+                    <rect
+                      x="12"
+                      y="27"
+                      width="138"
+                      height="70"
+                      rx="8"
+                      fill="#fff"
+                      stroke="#e5e3de"
+                    />
+                    <text x="81" y="67">网卡</text>
+                    <rect
+                      x="220"
+                      y="27"
+                      width="170"
+                      height="70"
+                      rx="8"
+                      fill="#e8f0f7"
+                      stroke="#cbdde9"
+                    />
+                    <text x="305" y="57">内核 socket</text>
+                    <text x="305" y="78">接收缓冲区</text>
+                    <rect
+                      x="460"
+                      y="27"
+                      width="170"
+                      height="70"
+                      rx="8"
+                      fill="#e8f2eb"
+                      stroke="#cde0d2"
+                    />
+                    <text x="545" y="57">用户缓冲区</text>
+                    <text x="545" y="78">recv() 的目标</text>
+                    <text x="725" y="67">处理</text>
+                  </g>
+                </svg>
+              </div>
+              <table class="compare">
+                <thead>
+                  <tr>
+                    <th>模型</th>
+                    <th>等待数据</th>
+                    <th>复制到用户区</th>
+                    <th>主要代价</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>同步阻塞</td>
+                    <td>当前线程挂起</td>
+                    <td>当前调用完成</td>
+                    <td>连接多时线程成本高</td>
+                  </tr>
+                  <tr>
+                    <td>同步非阻塞</td>
+                    <td>未就绪即返回</td>
+                    <td>当前调用完成</td>
+                    <td>轮询与大量无效系统调用</td>
+                  </tr>
+                  <tr>
+                    <td>异步 I/O</td>
+                    <td>系统处理</td>
+                    <td>系统完成后通知</td>
+                    <td>接口与编程模型更复杂</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="misconception">
+                <span class="callout-title"
+                  >常见误区</span
+                >“调用立即返回就是异步。”立即返回只说明当前没有阻塞；判断异步的关键是完成通知到来时，数据是否已经进入指定用户缓冲区。
+              </div>
+              <p class="source-ref">
+                来源：src/content/blog/redis-interview/多路IO复用.md，第
+                14-59、83-102 行
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section lesson" id="lesson-3">
+          <div class="shell lesson-layout">
+            <aside class="lesson-aside">
+              <div class="lesson-number">03</div>
+              <h2>I/O 多路复用</h2>
+              <span class="type">概念</span>
+              <p class="objective">
+                先修：02。目标：解释多路复用解决什么问题，以及为什么它仍属于同步
+                I/O。
+              </p>
+            </aside>
+            <article class="prose">
+              <div class="think">
+                <span class="callout-title">先想一下</span>如果有 10,000 个
+                socket，逐个
+                <code>recv()</code>
+                询问和一次等待“任意一个就绪”有什么本质差别？
+              </div>
+              <h3>复用的是等待者，不是数据通道</h3>
+              <p>
+                I/O 多路复用让一个线程只阻塞一次，同时等待一组 fd
+                中任意成员就绪。它避免应用不断逐个轮询所有
+                socket，也不要求“一连接一线程”。
+              </p>
+              <pre><code>epoll_wait()
+  → 内核报告 fd3 ready
+  → 用户线程 recv(fd3)
+  → 数据进入用户缓冲区
+  → recv() 返回</code></pre>
+              <p>
+                这里的分界点非常重要：<code>epoll_wait()</code>
+                交付的是“就绪事件”，不是已经读好的数据。应用收到事件后还必须调用
+                <code>recv()</code>，因此第二阶段仍由当前线程同步完成。
+              </p>
+              <div class="misconception">
+                <span class="callout-title">常见误区</span>“epoll 是异步
+                I/O。”epoll
+                优化的是等待就绪的方式；就绪之后，用户线程仍要执行真正的同步读写。
+              </div>
+              <div class="check">
+                <span class="callout-title">一句话自检</span>如果某 API
+                通知你“fd 可读”，Handler 接下来还要调用
+                <code>read()</code>，它更接近就绪模型，而不是完成模型。
+              </div>
+              <p class="source-ref">
+                来源：src/content/blog/redis-interview/多路IO复用.md，第 61-81
+                行
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section lesson" id="lesson-4">
+          <div class="shell lesson-layout">
+            <aside class="lesson-aside">
+              <div class="lesson-number">04</div>
+              <h2>select、poll、epoll</h2>
+              <span class="type">判断</span>
+              <p class="objective">
+                先修：03。目标：根据 fd 集合的传递、扫描和注册方式选择合适描述。
+              </p>
+            </aside>
+            <article class="prose">
+              <div class="think">
+                <span class="callout-title">先想一下</span
+                ><code>FD_SETSIZE</code>
+                是 socket 数量、fd 编号范围，还是扫描上界？如果没有 fd
+                立即就绪，<code>select</code>
+                如何避免持续占用 CPU？
+              </div>
+              <h3>三个机制的差别，抓住“每次都交什么”</h3>
+              <table class="compare">
+                <thead>
+                  <tr>
+                    <th>机制</th>
+                    <th>关注集合</th>
+                    <th>返回前的工作</th>
+                    <th>关键限制</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>select</code></td>
+                    <td>每次传完整 <code>fd_set</code></td>
+                    <td>遍历检查，O(n)</td>
+                    <td>位图；默认 fd 编号须小于 1024</td>
+                  </tr>
+                  <tr>
+                    <td><code>poll</code></td>
+                    <td>每次传 <code>pollfd</code> 数组</td>
+                    <td>仍遍历数组，O(n)</td>
+                    <td>去掉固定 FD_SETSIZE 限制</td>
+                  </tr>
+                  <tr>
+                    <td><code>epoll</code></td>
+                    <td>先用 <code>epoll_ctl</code> 注册</td>
+                    <td><code>epoll_wait</code> 返回 ready 事件</td>
+                    <td>Linux 机制；维护关注列表与 ready list</td>
+                  </tr>
+                </tbody>
+              </table>
+              <h3>select 的数量限制，先区分三个概念</h3>
+              <p>
+                glibc 默认的 <code>fd_set</code> 有 1024 位，能表示 fd
+                0-1023；这限制的是可放入集合的 fd 编号范围。<code>nfds</code>
+                应传三个集合中的最大 fd 编号加
+                1，它只是内核的扫描上界。一次调用实际监听的 socket
+                数量，则是集合中被置位的 socket fd 数量。
+              </p>
+              <p>
+                因此，“select 最多监听 1024 个
+                socket”只是一种不够严谨的简称。更准确的说法是：默认接口无法表示编号大于
+                1023 的 fd；进程可以拥有更多连接，只是不能把这些高编号 fd
+                交给这个 <code>fd_set</code>。
+              </p>
+              <h3>select 如何知道 fd 已就绪</h3>
+              <p>
+                Linux 内核先扫描集合中置位的 fd，查询每个 fd
+                对应对象当前是否满足可读、可写或异常条件。如果没有任何 fd
+                就绪且调用允许阻塞，内核会把当前任务挂到相关等待队列并让它睡眠；I/O
+                状态变化会唤醒任务，随后 <code>select</code> 再次扫描。
+              </p>
+              <p>
+                返回时，三个 <code>fd_set</code> 已被原地改写，只保留就绪的
+                fd。应用再用
+                <code>FD_ISSET()</code>
+                判断具体是哪几个。这里既不是用户态逐个调用
+                <code>recv()</code>
+                忙轮询，也不是内核执行用户态回调。
+              </p>
+              <p>
+                <code>epoll_create1()</code>
+                创建实例，<code>epoll_ctl()</code>
+                增删改关注的 fd，<code>epoll_wait()</code>
+                等待并返回一批就绪事件。它不是自动执行用户态回调，也不保证一次只返回一个
+                fd。
+              </p>
+              <div class="misconception">
+                <span class="callout-title">常见误区</span
+                ><code>FD_SETSIZE 1024</code>
+                限制的是传给 select 的 fd
+                编号范围，不宜直接说成“整个程序最多只能建立 1024 个连接”。
+              </div>
+              <div class="check">
+                <span class="callout-title">选择线索</span>
+                <ul>
+                  <li>看到“位图 + 固定编号范围” → select</li>
+                  <li>看到“数组 + 仍线性扫描” → poll</li>
+                  <li>看到“注册关注 + 返回 ready list” → epoll</li>
+                </ul>
+              </div>
+              <p class="source-ref">
+                来源：src/content/blog/redis-interview/poll、select、epoll.md，select、poll
+                与 epoll 小节
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section lesson" id="lesson-5">
+          <div class="shell lesson-layout">
+            <aside class="lesson-aside">
+              <div class="lesson-number">05</div>
+              <h2>LT 与 ET</h2>
+              <span class="type">过程</span>
+              <p class="objective">
+                先修：04。目标：说明 ET
+                读取循环的正确终止条件，并诊断“剩余数据不再通知”。
+              </p>
+            </aside>
+            <article class="prose">
+              <div class="think">
+                <span class="callout-title">先想一下</span>一个 socket 缓冲区有
+                8 KB，ET 通知后你只读了 2
+                KB。没有新数据到来时，还会出现新的“边缘”吗？
+              </div>
+              <h3>LT 看状态，ET 看变化</h3>
+              <p>
+                LT（水平触发）在“仍然可读”这个条件持续成立时会继续通知；ET（边缘触发）只在状态变化时通知。ET
+                下若一次没读完，缓冲区依然处于可读状态，但没有新的边缘，应用可能等不到下一次通知。
+              </p>
+              <pre><code>收到 ET 可读事件
+while true:
+  n = read(nonblocking_fd)
+  if n &gt; 0: 处理数据，继续读
+  if n == -1 and errno == EAGAIN: 本轮排空，停止
+  if n == 0: 对端关闭</code></pre>
+              <p>
+                所以 ET 的配套纪律是：socket
+                设为非阻塞；每次事件到来后持续读取；直到
+                <code>EAGAIN</code>
+                明确表示当前已无数据。非阻塞保证循环不会在排空之后挂死。
+              </p>
+              <div class="misconception">
+                <span class="callout-title">故障诊断</span>ET
+                模式偶发“连接还有数据却不再触发”，先检查 Handler 是否只 read
+                一次就返回，以及 fd 是否确实设置为非阻塞。
+              </div>
+              <p class="source-ref">
+                来源：src/content/blog/redis-interview/poll、select、epoll.md，第
+                58-62 行；流程为基于该规则的教学性展开
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section lesson" id="lesson-6">
+          <div class="shell lesson-layout">
+            <aside class="lesson-aside">
+              <div class="lesson-number">06</div>
+              <h2>Reactor 与 Proactor</h2>
+              <span class="type">判断</span>
+              <p class="objective">
+                先修：02-05。目标：看到事件描述时，能判断它是就绪分发还是完成分发。
+              </p>
+            </aside>
+            <article class="prose">
+              <h3>最可靠的问题：Handler 拿到事件后还要不要 read？</h3>
+              <table class="compare">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Reactor</th>
+                    <th>Proactor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>事件语义</td>
+                    <td>fd 已就绪</td>
+                    <td>I/O 已完成</td>
+                  </tr>
+                  <tr>
+                    <td>真正读写</td>
+                    <td>Handler 调用 read/write</td>
+                    <td>系统先把结果放入 Buffer</td>
+                  </tr>
+                  <tr>
+                    <td>常见对应</td>
+                    <td>epoll + 非阻塞 socket</td>
+                    <td>Windows Overlapped I/O + IOCP</td>
+                  </tr>
+                  <tr>
+                    <td>主要代价</td>
+                    <td>用户线程读写可能拖慢事件循环</td>
+                    <td>编程复杂、平台支持差异</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p>
+                Reactor 的路径是“注册 → 等待就绪 → 分发 → Handler 读写 →
+                业务处理”。Proactor 的路径是“提交异步 I/O → 系统完成 →
+                完成事件入队 → 分发 → Handler 处理现成结果”。
+              </p>
+              <p>
+                <code>io_uring</code>
+                使用提交队列与完成队列，模型上接近 Proactor；但博客也强调，普通
+                Tokio 网络 I/O 主要仍是就绪模型，不能把“Rust async
+                语法”自动等同于内核完成式 I/O。
+              </p>
+              <div class="misconception">
+                <span class="callout-title">常见误区</span>“用了
+                async/await，就是 Proactor。”语言层的异步控制流与操作系统 I/O
+                事件语义不是一回事；应检查底层通知的是 ready 还是 completed。
+              </div>
+              <div class="check">
+                <span class="callout-title">迁移判断</span>
+                <p>
+                  若现有 Handler 收到事件后调用
+                  <code>read()</code>，迁移到完成式接口不只是把 API
+                  名换掉：Buffer 所有权、提交队列、完成队列与错误处理都会改变。
+                </p>
+              </div>
+              <p class="source-ref">
+                来源：src/content/blog/redis-interview/Reactor 和
+                Proactor.md，第 14-52 行
+              </p>
+            </article>
+          </div>
+        </section>
+      </div>
+
+      <section class="section" id="quiz">
+        <div class="shell">
+          <div class="section-head">
+            <div class="section-kicker">03 / Self-check</div>
+            <div>
+              <h2>先回答，再展开答案</h2>
+              <p class="section-intro">
+                题目从概念辨认走向故障诊断。页面不会记录结果，刷新后仍是初始状态。
+              </p>
+            </div>
+          </div>
+          <div class="quiz-grid">
+            <article class="card question">
+              <div class="meta">Q1 · 知识点 01 · 基础</div>
+              <h3>“Redis 单线程”最准确地指什么？</h3>
+              <ol class="options" type="A">
+                <li>整个进程只能创建一个线程</li>
+                <li>大部分命令主要由主线程顺序执行</li>
+                <li>网络读写永远不能使用 I/O 线程</li>
+                <li>持久化必定阻塞主线程完成</li>
+              </ol>
+              <details>
+                <summary>查看答案与解析</summary>
+                <div>
+                  <strong>B。</strong>“单线程”描述的是主要命令执行路径。A、C、D
+                  都把局部模型错误扩张成了整个进程的绝对限制。
+                </div>
+              </details>
+            </article>
+            <article class="card question">
+              <div class="meta">Q2 · 知识点 02 · 基础</div>
+              <h3>同步非阻塞 I/O 为什么仍然是“同步”的？</h3>
+              <details>
+                <summary>用要点自评</summary>
+                <div>
+                  必要要点：未就绪时立即返回只改变等待阶段；应用仍要主动调用
+                  recv；数据复制到用户缓冲区仍在该调用中完成。若只说“因为它会轮询”，抓到了代价但没有回答分类依据。
+                </div>
+              </details>
+            </article>
+            <article class="card question">
+              <div class="meta">Q3 · 知识点 03 · 基础</div>
+              <h3>
+                <code>epoll_wait()</code>
+                返回 fd 可读后，数据是否已经在应用指定的用户缓冲区中？
+              </h3>
+              <ol class="options" type="A">
+                <li>一定已经完成复制</li>
+                <li>只要是 ET 就已经完成</li>
+                <li>不一定；应用仍需调用 recv/read</li>
+                <li>只有 fd 小于 1024 时才没有完成</li>
+              </ol>
+              <details>
+                <summary>查看答案与解析</summary>
+                <div>
+                  <strong>C。</strong>epoll 提供的是就绪通知。A 混淆了完成式
+                  I/O；B 把触发模式当作读取语义；D 把 select 的编号限制错误套到
+                  epoll。
+                </div>
+              </details>
+            </article>
+            <article class="card question">
+              <div class="meta">Q4 · 知识点 04 · 区分</div>
+              <h3>
+                哪个机制解决了固定 FD_SETSIZE，但每次调用仍需遍历整个数组？
+              </h3>
+              <ol class="options" type="A">
+                <li>epoll</li>
+                <li>IOCP</li>
+                <li>select</li>
+                <li>poll</li>
+              </ol>
+              <details>
+                <summary>查看答案与解析</summary>
+                <div>
+                  <strong>D。</strong>poll 用 pollfd
+                  数组替代位图，去掉固定编号上限，但没有消除线性遍历。select
+                  仍受位图范围限制；epoll 采用注册与 ready list 思路。
+                </div>
+              </details>
+            </article>
+            <article class="card question">
+              <div class="meta">Q5 · 知识点 04 · 纠错</div>
+              <h3>
+                默认情况下，<code>select</code>
+                到底可以监听多少个 socket？
+              </h3>
+              <details>
+                <summary>用要点自评</summary>
+                <div>
+                  不要只答“1024 个”。glibc 默认的 <code>fd_set</code> 能表示 fd
+                  0-1023，限制的是 fd 编号范围；<code>nfds</code>
+                  是最大 fd 编号加 1；实际监听数量取决于集合中置位了多少个
+                  socket fd。进程可以拥有更多连接，但默认
+                  <code>fd_set</code>
+                  无法表示编号大于 1023 的 fd。
+                </div>
+              </details>
+            </article>
+            <article class="card question">
+              <div class="meta">Q6 · 知识点 04 · 基础</div>
+              <h3><code>select</code> 如何感知某个 fd 已经就绪？</h3>
+              <details>
+                <summary>用要点自评</summary>
+                <div>
+                  内核扫描集合中置位的 fd，查询其当前就绪状态。若没有 fd
+                  就绪且允许阻塞，当前任务会进入相关等待队列并睡眠；I/O
+                  状态变化将其唤醒后，<code>select</code>
+                  再扫描，并把传入集合改写成只包含就绪 fd 的结果。应用用
+                  <code>FD_ISSET()</code>
+                  读取结果。
+                </div>
+              </details>
+            </article>
+            <article class="card question">
+              <div class="meta">Q7 · 知识点 05 · 应用</div>
+              <h3>
+                ET 模式收到可读事件后只读取一次便返回，最可能出现什么问题？
+              </h3>
+              <ol class="options" type="A">
+                <li>剩余数据可能因没有新边缘而不再通知</li>
+                <li>内核自动切换成 LT</li>
+                <li>epoll_wait 自动继续执行 read</li>
+                <li>fd 编号会被重新分配</li>
+              </ol>
+              <details>
+                <summary>查看答案与解析</summary>
+                <div>
+                  <strong>A。</strong>ET
+                  通知状态变化，不重复通知持续状态。正确做法通常是非阻塞读取直到
+                  EAGAIN。
+                </div>
+              </details>
+            </article>
+            <article class="card question">
+              <div class="meta">Q8 · 知识点 06 · 区分</div>
+              <h3>
+                Handler 收到事件后仍要自己调用
+                <code>read()</code>，这个系统更接近哪种模式？
+              </h3>
+              <ol class="options" type="A">
+                <li>Proactor</li>
+                <li>Reactor</li>
+                <li>纯异步完成模型</li>
+                <li>AOF Rewrite</li>
+              </ol>
+              <details>
+                <summary>查看答案与解析</summary>
+                <div>
+                  <strong>B。</strong>Reactor 分发的是就绪事件；真正 I/O 由
+                  Handler 完成。Proactor 的 Handler 接到的是完成结果。
+                </div>
+              </details>
+            </article>
+            <article class="card question">
+              <div class="meta">Q9 · 知识点 02 + 06 · 迁移</div>
+              <h3>
+                为什么把 Tokio 代码写成 async/await，不能单凭语法就断言底层是
+                Proactor？
+              </h3>
+              <details>
+                <summary>用要点自评</summary>
+                <div>
+                  必要要点：语言异步控制流与内核 I/O 模型是两个层次；普通 Tokio
+                  网络 I/O 主要使用就绪模型；判断标准应是底层交付 ready 事件还是
+                  completed 结果。可补充：io_uring 需要相应支持或额外依赖。
+                </div>
+              </details>
+            </article>
+            <article class="card question">
+              <div class="meta">Q10 · 知识点 01 + 03 · 诊断</div>
+              <h3>
+                网络层使用 epoll，但 Redis
+                仍出现全局延迟尖峰。给出一个来自课程材料的非网络解释。
+              </h3>
+              <details>
+                <summary>用要点自评</summary>
+                <div>
+                  可接受：大
+                  Key、慢命令、持久化或系统调度。核心逻辑是：主命令路径顺序执行，一项长任务会让后续请求排队；使用多路复用并不能消除命令执行阶段的阻塞。
+                </div>
+              </details>
+            </article>
+            <article class="card question">
+              <div class="meta">Q11 · 综合 · 应用</div>
+              <h3>
+                一个服务“注册 fd → 等待可读 → Handler 非阻塞读到
+                EAGAIN”。请为三段分别命名。
+              </h3>
+              <details>
+                <summary>查看答案与解析</summary>
+                <div>
+                  注册/等待部分可对应 epoll 驱动的
+                  Reactor；“可读”是就绪事件；读到 EAGAIN 是 ET
+                  模式下排空当前数据的典型处理纪律。仅凭这段不能称为
+                  Proactor，因为 Handler 仍亲自 read。
+                </div>
+              </details>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="sources">
+        <div class="shell">
+          <div class="section-head">
+            <div class="section-kicker">04 / Sources</div>
+            <div>
+              <h2>来源覆盖</h2>
+              <p class="section-intro">
+                所有核心结论都锚定到本地博客。本页没有联网补充外部事实，也没有复制项目中的运行时状态逻辑。
+              </p>
+            </div>
+          </div>
+          <ol class="source-list">
+            <li>
+              <div>
+                <strong>Redis 面试笔记</strong
+                ><span
+                  >src/content/blog/redis-interview/index.md，使用第 13-32
+                  行；第 35-48 行持久化内容本次排除</span
+                >
+              </div>
+            </li>
+            <li>
+              <div>
+                <strong>Redis 中的 I/O 多路复用</strong
+                ><span
+                  >src/content/blog/redis-interview/多路IO复用.md · 全文覆盖</span
+                >
+              </div>
+            </li>
+            <li>
+              <div>
+                <strong>select、poll 和 epoll</strong
+                ><span
+                  >src/content/blog/redis-interview/poll、select、epoll.md ·
+                  全文覆盖</span
+                >
+              </div>
+            </li>
+            <li>
+              <div>
+                <strong>Reactor 和 Proactor</strong
+                ><span
+                  >src/content/blog/redis-interview/Reactor 和 Proactor.md ·
+                  全文覆盖</span
+                >
+              </div>
+            </li>
+          </ol>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="shell footer-inner">
+        <span>无状态静态自学页</span>
+        <a href="#top">回到顶部</a>
+      </div>
+    </footer>
+  </body>
+</html>

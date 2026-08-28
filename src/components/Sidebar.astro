@@ -29,7 +29,9 @@ const section = NAVIGATION.find(
               >
                 {item.label}
               </a>
-              {item === section && crumbs.length > 0 && pathname !== item.href && (
+              {item === section &&
+                crumbs.length > 0 &&
+                pathname !== item.href && (
                 <ul>
                   {crumbs.map((crumb, i) => (
                     <li data-depth={i ? 1 : undefined}>
@@ -44,7 +46,7 @@ const section = NAVIGATION.find(
                     </li>
                   ))}
                 </ul>
-              )}
+                )}
             </li>
           ))}
         {!section &&
