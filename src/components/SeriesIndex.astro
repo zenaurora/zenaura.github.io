@@ -1,0 +1,108 @@
+---
+import { formatDate } from "@/lib/utils"
+import type { CollectionEntry } from "astro:content"
+
+type Props = { posts: CollectionEntry<"blog">[] }
+
+const { posts } = Astro.props
+---
+
+<nav class="series-index" aria-label="系列文章目录">
+  <p class="series-index__label">文章目录</p>
+  {posts.length > 0 ? (
+    <ol>
+      {posts.map((post) => (
+        <li>
+          <a href={`/blog/${post.id}`}>
+            <span class="series-index__title">{post.data.title}</span>
+            <span class="series-index__meta">
+              <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+              <span>{post.data.description}</span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  ) : (
+    <p class="series-index__empty">第一篇笔记正在整理中。</p>
+  )}
+</nav>
+
+<style>
+  .series-index {
+    margin-block: var(--space-l) var(--space-xl);
+    padding-block-start: var(--space-s);
+    border-block-start: 1px solid var(--border);
+  }
+
+  .series-index__label {
+    margin-block-end: var(--space-xs);
+    color: var(--foreground);
+    font-size: var(--step--1);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: 0.04em;
+  }
+
+  ol {
+    display: grid;
+    gap: 0;
+    list-style: none;
+    counter-reset: article;
+  }
+
+  li {
+    counter-increment: article;
+    border-block-start: 1px solid
+      color-mix(in oklab, var(--border) 72%, transparent);
+  }
+
+  a {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: var(--space-2xs);
+    padding-block: var(--space-xs);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      color 180ms ease,
+      transform 180ms ease;
+  }
+
+  a::before {
+    content: counter(article, decimal-leading-zero);
+    padding-block-start: 0.1em;
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+
+  a:hover {
+    color: var(--foreground);
+    transform: translateX(0.2rem);
+  }
+
+  .series-index__title,
+  .series-index__meta {
+    grid-column: 2;
+    overflow-wrap: anywhere;
+    display: block;
+  }
+
+  .series-index__title {
+    font-weight: var(--font-weight-medium);
+  }
+
+  .series-index__meta {
+    margin-block-start: 0.15rem;
+    color: var(--muted-foreground);
+    font-size: var(--step--1);
+  }
+
+  time::after {
+    content: " · ";
+  }
+
+  .series-index__empty {
+    color: var(--muted-foreground);
+  }
+</style>

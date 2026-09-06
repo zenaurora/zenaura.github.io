@@ -62,7 +62,10 @@ const crumbs = [
     <header>
       <daily-meta>
         <topic-badge>{meta.label}</topic-badge>
-        <time datetime={entry.data.date.toISOString()}>{dateKey} · {weekday}</time>
+        <time datetime={entry.data.date.toISOString()}
+          >{dateKey}
+          · {weekday}</time
+        >
         {entry.data.sourceCount && (
           <span>筛选自 {entry.data.sourceCount} 条资讯</span>
         )}
@@ -153,7 +156,9 @@ const crumbs = [
       border-radius: var(--radius-lg, 0.75rem);
       padding: var(--space-xs) var(--space-s);
       background: color-mix(in oklab, var(--foreground) 3%, transparent);
-      transition: border-color 0.2s ease, background-color 0.2s ease;
+      transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease;
 
       &:hover {
         border-color: color-mix(in oklab, var(--foreground) 25%, var(--border));

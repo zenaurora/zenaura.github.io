@@ -2,6 +2,7 @@
 import MetaPost from "@/components/MetaPost.astro"
 import PostActions from "@/components/PostActions.astro"
 import ScrollToTop from "@/components/ScrollToTop.astro"
+import SeriesIndex from "@/components/SeriesIndex.astro"
 import SeriesReader from "@/components/SeriesReader.astro"
 import TableOfContents from "@/components/TableOfContents.astro"
 import Layout from "@/layouts/Layout.astro"
@@ -32,8 +33,14 @@ type Props = {
 
 const { post, chain, prev, next } = Astro.props
 const [parent] = chain
+const isSeriesIndex = parent.data.seriesIndex === true
+const visibleEntries = isSeriesIndex
+  ? isSubpost(post.id)
+    ? [post]
+    : [parent]
+  : chain
 const rendered = await Promise.all(
-  chain.map(async (entry) => ({
+  visibleEntries.map(async (entry) => ({
     entry,
     ...(await render(entry)),
     authors: await getEntries(entry.data.authors),
@@ -137,7 +144,8 @@ if (isSubpost(post.id)) {
         </prose-content>
       </article>
   ))}
-    {chain.length > 1 && <SeriesReader />}
+    {isSeriesIndex && !isSubpost(post.id) && <SeriesIndex posts={chain.slice(1)} />}
+    {!isSeriesIndex && chain.length > 1 && <SeriesReader />}
   </section>
 </Layout>
 

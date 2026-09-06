@@ -33,7 +33,10 @@ const totalCount = dailies.length
 
   <daily-hero>
     <h1>日报</h1>
-    <p>每天自动采集 RSS 源，筛选去重后由模型整理成中文摘要，不点链接也能知道发生了什么。</p>
+    <p>
+      每天自动采集 RSS
+      源，筛选去重后由模型整理成中文摘要，不点链接也能知道发生了什么。
+    </p>
   </daily-hero>
 
   <daily-filter role="tablist" aria-label="按话题筛选">
@@ -271,13 +274,13 @@ const totalCount = dailies.length
       border: 1px solid var(--border);
       border-radius: var(--radius-lg, 0.75rem);
       padding: var(--space-s) var(--space-s-m);
-      background:
-        linear-gradient(
-          to bottom,
-          color-mix(in oklab, var(--foreground) 4.5%, transparent),
-          color-mix(in oklab, var(--foreground) 1.5%, transparent)
-        );
-      box-shadow: inset 0 1px 0 color-mix(in oklab, var(--background) 60%, transparent);
+      background: linear-gradient(
+        to bottom,
+        color-mix(in oklab, var(--foreground) 4.5%, transparent),
+        color-mix(in oklab, var(--foreground) 1.5%, transparent)
+      );
+      box-shadow: inset 0 1px 0
+        color-mix(in oklab, var(--background) 60%, transparent);
       overflow: hidden;
       transition:
         border-color 0.25s ease,

@@ -1,0 +1,174 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1200 560"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">
+    Sliding Window、Block-sparse 与 Cross-attention Mask 对比
+  </title>
+  <desc id="desc">
+    三张矩阵分别展示局部因果窗口、按块保留局部与全局连接，以及目标序列读取源序列并屏蔽源端
+    padding。
+  </desc>
+  <style>
+    text {
+      fill: #292d32;
+      font-family:
+        ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    .title {
+      font-size: 23px;
+      font-weight: 700;
+    }
+    .subtitle {
+      fill: #686d75;
+      font-size: 14px;
+    }
+    .axis {
+      fill: #737982;
+      font-size: 13px;
+    }
+    .card {
+      fill: #fbfaf8;
+      stroke: #dedbd5;
+      stroke-width: 1.5;
+    }
+    .blocked {
+      fill: #eceae6;
+    }
+    .window {
+      fill: #b9d5ec;
+    }
+    .local {
+      fill: #d8caeb;
+    }
+    .global {
+      fill: #c9e1d0;
+    }
+    .cross {
+      fill: #f0dcb5;
+    }
+    .grid {
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2.5;
+    }
+    .legend {
+      fill: #5f656d;
+      font-size: 12px;
+    }
+    .pad {
+      fill: #a26c6c;
+      font-size: 11px;
+      font-weight: 650;
+    }
+  </style>
+  <defs>
+    <path
+      id="grid7"
+      class="grid"
+      d="M0 0H210V210H0Z M30 0V210 M60 0V210 M90 0V210 M120 0V210 M150 0V210 M180 0V210 M0 30H210 M0 60H210 M0 90H210 M0 120H210 M0 150H210 M0 180H210"
+    />
+    <path
+      id="grid8"
+      class="grid"
+      d="M0 0H208V208H0Z M26 0V208 M52 0V208 M78 0V208 M104 0V208 M130 0V208 M156 0V208 M182 0V208 M0 26H208 M0 52H208 M0 78H208 M0 104H208 M0 130H208 M0 156H208 M0 182H208"
+    />
+  </defs>
+
+  <rect width="1200" height="560" rx="20" fill="#f7f6f3" />
+
+  <!-- Sliding window -->
+  <rect class="card" x="28" y="28" width="356" height="462" rx="16" />
+  <text class="title" x="52" y="69">Sliding Window</text>
+  <text class="subtitle" x="52" y="96">只读取最近 3 个位置</text>
+  <text class="axis" x="213" y="130" text-anchor="middle">Key →</text>
+  <text
+    class="axis"
+    x="64"
+    y="262"
+    text-anchor="middle"
+    transform="rotate(-90 64 262)"
+  >
+    Query →
+  </text>
+  <g transform="translate(108 148)">
+    <rect class="blocked" width="210" height="210" />
+    <rect class="window" x="0" y="0" width="30" height="30" />
+    <rect class="window" x="0" y="30" width="60" height="30" />
+    <rect class="window" x="0" y="60" width="90" height="30" />
+    <rect class="window" x="30" y="90" width="90" height="30" />
+    <rect class="window" x="60" y="120" width="90" height="30" />
+    <rect class="window" x="90" y="150" width="90" height="30" />
+    <rect class="window" x="120" y="180" width="90" height="30" />
+    <use href="#grid7" />
+  </g>
+  <rect class="window" x="108" y="397" width="16" height="16" rx="3" />
+  <text class="legend" x="133" y="409">最近窗口</text>
+  <rect class="blocked" x="228" y="397" width="16" height="16" rx="3" />
+  <text class="legend" x="253" y="409">屏蔽</text>
+
+  <!-- Block sparse -->
+  <rect class="card" x="422" y="28" width="356" height="462" rx="16" />
+  <text class="title" x="446" y="69">Block-sparse</text>
+  <text class="subtitle" x="446" y="96">按块保留局部与全局连接</text>
+  <text class="axis" x="607" y="130" text-anchor="middle">Key block →</text>
+  <text
+    class="axis"
+    x="458"
+    y="262"
+    text-anchor="middle"
+    transform="rotate(-90 458 262)"
+  >
+    Query block →
+  </text>
+  <g transform="translate(503 149)">
+    <rect class="blocked" width="208" height="208" />
+    <rect class="global" width="208" height="52" />
+    <rect class="global" width="52" height="208" />
+    <rect class="local" x="52" y="52" width="52" height="52" />
+    <rect class="local" x="104" y="104" width="52" height="52" />
+    <rect class="local" x="156" y="156" width="52" height="52" />
+    <use href="#grid8" />
+  </g>
+  <rect class="global" x="487" y="397" width="16" height="16" rx="3" />
+  <text class="legend" x="512" y="409">全局</text>
+  <rect class="local" x="572" y="397" width="16" height="16" rx="3" />
+  <text class="legend" x="597" y="409">局部</text>
+  <rect class="blocked" x="657" y="397" width="16" height="16" rx="3" />
+  <text class="legend" x="682" y="409">跳过</text>
+
+  <!-- Cross attention -->
+  <rect class="card" x="816" y="28" width="356" height="462" rx="16" />
+  <text class="title" x="840" y="69">Cross-attention</text>
+  <text class="subtitle" x="840" y="96">Decoder query 读取 Encoder key</text>
+  <text class="axis" x="1001" y="145" text-anchor="middle">Source key →</text>
+  <text
+    class="axis"
+    x="852"
+    y="260"
+    text-anchor="middle"
+    transform="rotate(-90 852 260)"
+  >
+    Target query →
+  </text>
+  <g transform="translate(896 178)">
+    <rect class="blocked" width="210" height="150" />
+    <rect class="cross" width="150" height="150" />
+    <path
+      class="grid"
+      d="M0 0H210V150H0Z M30 0V150 M60 0V150 M90 0V150 M120 0V150 M150 0V150 M180 0V150 M0 30H210 M0 60H210 M0 90H210 M0 120H210"
+    />
+  </g>
+  <text class="pad" x="1061" y="171" text-anchor="middle">PAD</text>
+  <text class="pad" x="1091" y="171" text-anchor="middle">PAD</text>
+  <rect class="cross" x="891" y="397" width="16" height="16" rx="3" />
+  <text class="legend" x="916" y="409">有效 source</text>
+  <rect class="blocked" x="1018" y="397" width="16" height="16" rx="3" />
+  <text class="legend" x="1043" y="409">Padding</text>
+
+  <text class="axis" x="600" y="527" text-anchor="middle">
+    矩阵形状和稀疏结构不同，但彩色区域始终表示允许 query 读取 key
+  </text>
+</svg>

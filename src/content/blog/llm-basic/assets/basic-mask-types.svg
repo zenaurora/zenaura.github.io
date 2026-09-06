@@ -1,0 +1,146 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1200 540"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">双向、因果与 Padding Attention Mask 对比</title>
+  <desc id="desc">
+    三张五乘五矩阵分别展示全部 token
+    双向可见、只允许读取当前和过去位置，以及屏蔽 padding key 列。
+  </desc>
+  <style>
+    text {
+      fill: #292d32;
+      font-family:
+        ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    .title {
+      font-size: 25px;
+      font-weight: 700;
+    }
+    .subtitle {
+      fill: #686d75;
+      font-size: 15px;
+    }
+    .axis {
+      fill: #737982;
+      font-size: 13px;
+    }
+    .card {
+      fill: #fbfaf8;
+      stroke: #dedbd5;
+      stroke-width: 1.5;
+    }
+    .blocked {
+      fill: #eceae6;
+    }
+    .bi {
+      fill: #b9d5ec;
+    }
+    .causal {
+      fill: #d8caeb;
+    }
+    .valid {
+      fill: #c9e1d0;
+    }
+    .grid {
+      fill: none;
+      stroke: #fff;
+      stroke-width: 3;
+    }
+    .legend {
+      fill: #5f656d;
+      font-size: 13px;
+    }
+    .pad {
+      fill: #a26c6c;
+      font-size: 12px;
+      font-weight: 650;
+    }
+  </style>
+  <defs>
+    <path
+      id="grid5"
+      class="grid"
+      d="M0 0H210V210H0Z M42 0V210 M84 0V210 M126 0V210 M168 0V210 M0 42H210 M0 84H210 M0 126H210 M0 168H210"
+    />
+  </defs>
+
+  <rect width="1200" height="540" rx="20" fill="#f7f6f3" />
+
+  <!-- Bidirectional -->
+  <rect class="card" x="28" y="28" width="356" height="444" rx="16" />
+  <text class="title" x="52" y="70">Bidirectional</text>
+  <text class="subtitle" x="52" y="98">有效 token 之间全部可见</text>
+  <text class="axis" x="213" y="133" text-anchor="middle">Key →</text>
+  <text
+    class="axis"
+    x="64"
+    y="260"
+    text-anchor="middle"
+    transform="rotate(-90 64 260)"
+  >
+    Query →
+  </text>
+  <g transform="translate(108 150)">
+    <rect class="bi" width="210" height="210" />
+    <use href="#grid5" />
+  </g>
+  <rect class="bi" x="108" y="397" width="16" height="16" rx="3" />
+  <text class="legend" x="133" y="410">允许读取全部有效 key</text>
+
+  <!-- Causal -->
+  <rect class="card" x="422" y="28" width="356" height="444" rx="16" />
+  <text class="title" x="446" y="70">Causal</text>
+  <text class="subtitle" x="446" y="98">只能读取自己和过去</text>
+  <text class="axis" x="607" y="133" text-anchor="middle">Key →</text>
+  <text
+    class="axis"
+    x="458"
+    y="260"
+    text-anchor="middle"
+    transform="rotate(-90 458 260)"
+  >
+    Query →
+  </text>
+  <g transform="translate(502 150)">
+    <rect class="blocked" width="210" height="210" />
+    <path class="causal" d="M0 0H42V42H84V84H126V126H168V168H210V210H0Z" />
+    <use href="#grid5" />
+  </g>
+  <rect class="causal" x="502" y="397" width="16" height="16" rx="3" />
+  <text class="legend" x="527" y="410">下三角可见</text>
+  <rect class="blocked" x="630" y="397" width="16" height="16" rx="3" />
+  <text class="legend" x="655" y="410">未来被屏蔽</text>
+
+  <!-- Padding -->
+  <rect class="card" x="816" y="28" width="356" height="444" rx="16" />
+  <text class="title" x="840" y="70">Padding</text>
+  <text class="subtitle" x="840" y="98">无效 key 对应整列被屏蔽</text>
+  <text class="axis" x="1001" y="133" text-anchor="middle">Key →</text>
+  <text
+    class="axis"
+    x="852"
+    y="260"
+    text-anchor="middle"
+    transform="rotate(-90 852 260)"
+  >
+    Query →
+  </text>
+  <g transform="translate(896 150)">
+    <rect class="blocked" width="210" height="210" />
+    <rect class="valid" width="126" height="210" />
+    <use href="#grid5" />
+  </g>
+  <text class="pad" x="1043" y="144" text-anchor="middle">PAD</text>
+  <text class="pad" x="1085" y="144" text-anchor="middle">PAD</text>
+  <rect class="valid" x="896" y="397" width="16" height="16" rx="3" />
+  <text class="legend" x="921" y="410">有效 key</text>
+  <rect class="blocked" x="1009" y="397" width="16" height="16" rx="3" />
+  <text class="legend" x="1034" y="410">Padding key</text>
+
+  <text class="axis" x="600" y="510" text-anchor="middle">
+    彩色单元格允许 attention，灰色单元格被 Mask
+  </text>
+</svg>

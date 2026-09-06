@@ -1,0 +1,167 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1200 500"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">KV Cache 中矩形 Causal Mask 的左上与右下对齐</title>
+  <desc id="desc">
+    左侧展示将三个新 query
+    错误地按局部下标绘制左上三角，右侧展示按绝对位置五、六、七正确地与八个 key
+    右下对齐。
+  </desc>
+  <style>
+    text {
+      fill: #292d32;
+      font-family:
+        ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    .title {
+      font-size: 25px;
+      font-weight: 700;
+    }
+    .subtitle {
+      fill: #686d75;
+      font-size: 15px;
+    }
+    .axis {
+      fill: #737982;
+      font-size: 13px;
+    }
+    .label {
+      fill: #555b64;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .card {
+      fill: #fbfaf8;
+      stroke: #dedbd5;
+      stroke-width: 1.5;
+    }
+    .blocked {
+      fill: #eceae6;
+    }
+    .wrong {
+      fill: #edc5c0;
+    }
+    .correct {
+      fill: #c9e1d0;
+    }
+    .grid {
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2.5;
+    }
+    .note-wrong {
+      fill: #9b5550;
+      font-size: 14px;
+      font-weight: 650;
+    }
+    .note-correct {
+      fill: #48735a;
+      font-size: 14px;
+      font-weight: 650;
+    }
+  </style>
+  <defs>
+    <path
+      id="grid"
+      class="grid"
+      d="M0 0H336V126H0Z M42 0V126 M84 0V126 M126 0V126 M168 0V126 M210 0V126 M252 0V126 M294 0V126 M0 42H336 M0 84H336"
+    />
+  </defs>
+
+  <rect width="1200" height="500" rx="20" fill="#f7f6f3" />
+
+  <!-- Wrong upper-left alignment -->
+  <rect class="card" x="28" y="28" width="558" height="402" rx="16" />
+  <text class="title" x="58" y="70">左上对齐：错误语义</text>
+  <text class="subtitle" x="58" y="98">
+    局部 query 下标 0、1、2 被误当成绝对位置
+  </text>
+  <text class="axis" x="326" y="136" text-anchor="middle">
+    KV Cache 中的 key 绝对位置
+  </text>
+  <g class="label" text-anchor="middle">
+    <text x="179" y="163">0</text>
+    <text x="221" y="163">1</text>
+    <text x="263" y="163">2</text>
+    <text x="305" y="163">3</text>
+    <text x="347" y="163">4</text>
+    <text x="389" y="163">5</text>
+    <text x="431" y="163">6</text>
+    <text x="473" y="163">7</text>
+  </g>
+  <g class="label" text-anchor="end">
+    <text x="143" y="201">q@5</text>
+    <text x="143" y="243">q@6</text>
+    <text x="143" y="285">q@7</text>
+  </g>
+  <text
+    class="axis"
+    x="72"
+    y="234"
+    text-anchor="middle"
+    transform="rotate(-90 72 234)"
+  >
+    新 query
+  </text>
+  <g transform="translate(158 174)">
+    <rect class="blocked" width="336" height="126" />
+    <rect class="wrong" width="42" height="42" />
+    <rect class="wrong" y="42" width="84" height="42" />
+    <rect class="wrong" y="84" width="126" height="42" />
+    <use href="#grid" />
+  </g>
+  <text class="note-wrong" x="158" y="342">历史位置 3–7 被错误屏蔽</text>
+  <text class="subtitle" x="158" y="369">q@7 最终只能读取 key 0–2</text>
+
+  <!-- Correct lower-right alignment -->
+  <rect class="card" x="614" y="28" width="558" height="402" rx="16" />
+  <text class="title" x="644" y="70">右下对齐：正确语义</text>
+  <text class="subtitle" x="644" y="98">
+    根据 query 在完整序列中的绝对位置判断
+  </text>
+  <text class="axis" x="912" y="136" text-anchor="middle">
+    KV Cache 中的 key 绝对位置
+  </text>
+  <g class="label" text-anchor="middle">
+    <text x="765" y="163">0</text>
+    <text x="807" y="163">1</text>
+    <text x="849" y="163">2</text>
+    <text x="891" y="163">3</text>
+    <text x="933" y="163">4</text>
+    <text x="975" y="163">5</text>
+    <text x="1017" y="163">6</text>
+    <text x="1059" y="163">7</text>
+  </g>
+  <g class="label" text-anchor="end">
+    <text x="729" y="201">q@5</text>
+    <text x="729" y="243">q@6</text>
+    <text x="729" y="285">q@7</text>
+  </g>
+  <text
+    class="axis"
+    x="658"
+    y="234"
+    text-anchor="middle"
+    transform="rotate(-90 658 234)"
+  >
+    新 query
+  </text>
+  <g transform="translate(744 174)">
+    <rect class="blocked" width="336" height="126" />
+    <rect class="correct" width="252" height="42" />
+    <rect class="correct" y="42" width="294" height="42" />
+    <rect class="correct" y="84" width="336" height="42" />
+    <use href="#grid" />
+  </g>
+  <text class="note-correct" x="744" y="342">
+    每个 query 可以读取此前全部 key
+  </text>
+  <text class="subtitle" x="744" y="369">q@7 可以读取 key 0–7</text>
+
+  <text class="axis" x="600" y="467" text-anchor="middle">
+    当 q_len ≠ kv_len 时，因果条件应比较绝对位置，而不是矩阵内部的局部行列下标
+  </text>
+</svg>

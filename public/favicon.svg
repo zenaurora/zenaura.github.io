@@ -1,5 +1,31 @@
-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M64 384C64 384 128 288 192 256C256 224 320 288 384 256C448 224 448 160 448 160" stroke="#CCCCCC" stroke-width="48" stroke-linecap="round" fill="none" opacity="0.35"/>
-  <path d="M96 352C96 352 160 256 224 224C288 192 336 256 400 224C464 192 448 128 448 128" stroke="#CCCCCC" stroke-width="48" stroke-linecap="round" fill="none" opacity="0.6"/>
-  <path d="M128 320C128 320 192 224 256 192C320 160 368 224 416 192C464 160 448 96 448 96" stroke="#CCCCCC" stroke-width="48" stroke-linecap="round" fill="none"/>
+<svg
+  width="512"
+  height="512"
+  viewBox="0 0 512 512"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <path
+    d="M64 384C64 384 128 288 192 256C256 224 320 288 384 256C448 224 448 160 448 160"
+    stroke="#CCCCCC"
+    stroke-width="48"
+    stroke-linecap="round"
+    fill="none"
+    opacity="0.35"
+  />
+  <path
+    d="M96 352C96 352 160 256 224 224C288 192 336 256 400 224C464 192 448 128 448 128"
+    stroke="#CCCCCC"
+    stroke-width="48"
+    stroke-linecap="round"
+    fill="none"
+    opacity="0.6"
+  />
+  <path
+    d="M128 320C128 320 192 224 256 192C320 160 368 224 416 192C464 160 448 96 448 96"
+    stroke="#CCCCCC"
+    stroke-width="48"
+    stroke-linecap="round"
+    fill="none"
+  />
 </svg>

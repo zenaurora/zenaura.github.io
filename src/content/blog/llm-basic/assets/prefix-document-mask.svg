@@ -1,0 +1,251 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1200 650"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">Prefix LM 与 packed document 的 Attention Mask 对比</title>
+  <desc id="desc">
+    左侧矩阵展示前缀内部双向可见、生成区按因果顺序读取；右侧矩阵展示两个打包文档各自在文档内部因果可见，跨文档连接全部屏蔽。
+  </desc>
+  <style>
+    text {
+      fill: #292d32;
+      font-family:
+        ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    .title {
+      font-size: 27px;
+      font-weight: 700;
+    }
+    .subtitle {
+      fill: #686d75;
+      font-size: 16px;
+    }
+    .label {
+      fill: #555b64;
+      font-size: 14px;
+      font-weight: 650;
+    }
+    .axis {
+      fill: #777d85;
+      font-size: 13px;
+    }
+    .cell {
+      stroke: #fff;
+      stroke-width: 3;
+    }
+    .blocked {
+      fill: #eeece8;
+    }
+    .prefix {
+      fill: #b9d5ec;
+    }
+    .generate {
+      fill: #d9c9eb;
+    }
+    .doc-a {
+      fill: #c9e1d0;
+    }
+    .doc-b {
+      fill: #f0dcb5;
+    }
+    .frame {
+      fill: #fbfaf8;
+      stroke: #dedbd5;
+      stroke-width: 1.5;
+    }
+    .divider {
+      stroke: #8c9299;
+      stroke-width: 2;
+      stroke-dasharray: 6 6;
+    }
+    .legend {
+      fill: #5e646c;
+      font-size: 13px;
+    }
+  </style>
+
+  <rect width="1200" height="650" rx="20" fill="#f7f6f3" />
+
+  <!-- Prefix LM -->
+  <rect class="frame" x="28" y="28" width="558" height="554" rx="16" />
+  <text class="title" x="58" y="72">Prefix LM</text>
+  <text class="subtitle" x="58" y="101">
+    前缀双向可见，生成区只能读取前缀和过去
+  </text>
+  <text class="axis" x="324" y="133" text-anchor="middle">Key</text>
+  <text
+    class="axis"
+    x="76"
+    y="316"
+    text-anchor="middle"
+    transform="rotate(-90 76 316)"
+  >
+    Query
+  </text>
+
+  <!-- Prefix LM column labels -->
+  <g class="label" text-anchor="middle">
+    <text x="178" y="162">P0</text>
+    <text x="230" y="162">P1</text>
+    <text x="282" y="162">P2</text>
+    <text x="334" y="162">G0</text>
+    <text x="386" y="162">G1</text>
+    <text x="438" y="162">G2</text>
+  </g>
+  <g class="label" text-anchor="end">
+    <text x="142" y="199">P0</text>
+    <text x="142" y="251">P1</text>
+    <text x="142" y="303">P2</text>
+    <text x="142" y="355">G0</text>
+    <text x="142" y="407">G1</text>
+    <text x="142" y="459">G2</text>
+  </g>
+
+  <!-- Prefix LM grid: start x=152, y=172, cell=52 -->
+  <g>
+    <!-- P0 -->
+    <rect class="cell prefix" x="152" y="172" width="52" height="52" />
+    <rect class="cell prefix" x="204" y="172" width="52" height="52" />
+    <rect class="cell prefix" x="256" y="172" width="52" height="52" />
+    <rect class="cell blocked" x="308" y="172" width="52" height="52" />
+    <rect class="cell blocked" x="360" y="172" width="52" height="52" />
+    <rect class="cell blocked" x="412" y="172" width="52" height="52" />
+    <!-- P1 -->
+    <rect class="cell prefix" x="152" y="224" width="52" height="52" />
+    <rect class="cell prefix" x="204" y="224" width="52" height="52" />
+    <rect class="cell prefix" x="256" y="224" width="52" height="52" />
+    <rect class="cell blocked" x="308" y="224" width="52" height="52" />
+    <rect class="cell blocked" x="360" y="224" width="52" height="52" />
+    <rect class="cell blocked" x="412" y="224" width="52" height="52" />
+    <!-- P2 -->
+    <rect class="cell prefix" x="152" y="276" width="52" height="52" />
+    <rect class="cell prefix" x="204" y="276" width="52" height="52" />
+    <rect class="cell prefix" x="256" y="276" width="52" height="52" />
+    <rect class="cell blocked" x="308" y="276" width="52" height="52" />
+    <rect class="cell blocked" x="360" y="276" width="52" height="52" />
+    <rect class="cell blocked" x="412" y="276" width="52" height="52" />
+    <!-- G0 -->
+    <rect class="cell prefix" x="152" y="328" width="52" height="52" />
+    <rect class="cell prefix" x="204" y="328" width="52" height="52" />
+    <rect class="cell prefix" x="256" y="328" width="52" height="52" />
+    <rect class="cell generate" x="308" y="328" width="52" height="52" />
+    <rect class="cell blocked" x="360" y="328" width="52" height="52" />
+    <rect class="cell blocked" x="412" y="328" width="52" height="52" />
+    <!-- G1 -->
+    <rect class="cell prefix" x="152" y="380" width="52" height="52" />
+    <rect class="cell prefix" x="204" y="380" width="52" height="52" />
+    <rect class="cell prefix" x="256" y="380" width="52" height="52" />
+    <rect class="cell generate" x="308" y="380" width="52" height="52" />
+    <rect class="cell generate" x="360" y="380" width="52" height="52" />
+    <rect class="cell blocked" x="412" y="380" width="52" height="52" />
+    <!-- G2 -->
+    <rect class="cell prefix" x="152" y="432" width="52" height="52" />
+    <rect class="cell prefix" x="204" y="432" width="52" height="52" />
+    <rect class="cell prefix" x="256" y="432" width="52" height="52" />
+    <rect class="cell generate" x="308" y="432" width="52" height="52" />
+    <rect class="cell generate" x="360" y="432" width="52" height="52" />
+    <rect class="cell generate" x="412" y="432" width="52" height="52" />
+  </g>
+  <line class="divider" x1="308" y1="166" x2="308" y2="490" />
+  <line class="divider" x1="146" y1="328" x2="470" y2="328" />
+  <g class="legend">
+    <rect class="prefix" x="150" y="519" width="16" height="16" rx="3" />
+    <text x="175" y="532">读取前缀</text>
+    <rect class="generate" x="271" y="519" width="16" height="16" rx="3" />
+    <text x="296" y="532">读取生成区</text>
+    <rect class="blocked" x="414" y="519" width="16" height="16" rx="3" />
+    <text x="439" y="532">屏蔽</text>
+  </g>
+
+  <!-- Packed documents -->
+  <rect class="frame" x="614" y="28" width="558" height="554" rx="16" />
+  <text class="title" x="644" y="72">Packed documents</text>
+  <text class="subtitle" x="644" y="101">文档内保持因果顺序，跨文档不可见</text>
+  <text class="axis" x="910" y="133" text-anchor="middle">Key</text>
+  <text
+    class="axis"
+    x="662"
+    y="316"
+    text-anchor="middle"
+    transform="rotate(-90 662 316)"
+  >
+    Query
+  </text>
+
+  <g class="label" text-anchor="middle">
+    <text x="764" y="162">A0</text>
+    <text x="816" y="162">A1</text>
+    <text x="868" y="162">A2</text>
+    <text x="920" y="162">B0</text>
+    <text x="972" y="162">B1</text>
+    <text x="1024" y="162">B2</text>
+  </g>
+  <g class="label" text-anchor="end">
+    <text x="728" y="199">A0</text>
+    <text x="728" y="251">A1</text>
+    <text x="728" y="303">A2</text>
+    <text x="728" y="355">B0</text>
+    <text x="728" y="407">B1</text>
+    <text x="728" y="459">B2</text>
+  </g>
+
+  <!-- Packed document grid: start x=738, y=172 -->
+  <g>
+    <!-- A0 -->
+    <rect class="cell doc-a" x="738" y="172" width="52" height="52" />
+    <rect class="cell blocked" x="790" y="172" width="52" height="52" />
+    <rect class="cell blocked" x="842" y="172" width="52" height="52" />
+    <rect class="cell blocked" x="894" y="172" width="52" height="52" />
+    <rect class="cell blocked" x="946" y="172" width="52" height="52" />
+    <rect class="cell blocked" x="998" y="172" width="52" height="52" />
+    <!-- A1 -->
+    <rect class="cell doc-a" x="738" y="224" width="52" height="52" />
+    <rect class="cell doc-a" x="790" y="224" width="52" height="52" />
+    <rect class="cell blocked" x="842" y="224" width="52" height="52" />
+    <rect class="cell blocked" x="894" y="224" width="52" height="52" />
+    <rect class="cell blocked" x="946" y="224" width="52" height="52" />
+    <rect class="cell blocked" x="998" y="224" width="52" height="52" />
+    <!-- A2 -->
+    <rect class="cell doc-a" x="738" y="276" width="52" height="52" />
+    <rect class="cell doc-a" x="790" y="276" width="52" height="52" />
+    <rect class="cell doc-a" x="842" y="276" width="52" height="52" />
+    <rect class="cell blocked" x="894" y="276" width="52" height="52" />
+    <rect class="cell blocked" x="946" y="276" width="52" height="52" />
+    <rect class="cell blocked" x="998" y="276" width="52" height="52" />
+    <!-- B0 -->
+    <rect class="cell blocked" x="738" y="328" width="52" height="52" />
+    <rect class="cell blocked" x="790" y="328" width="52" height="52" />
+    <rect class="cell blocked" x="842" y="328" width="52" height="52" />
+    <rect class="cell doc-b" x="894" y="328" width="52" height="52" />
+    <rect class="cell blocked" x="946" y="328" width="52" height="52" />
+    <rect class="cell blocked" x="998" y="328" width="52" height="52" />
+    <!-- B1 -->
+    <rect class="cell blocked" x="738" y="380" width="52" height="52" />
+    <rect class="cell blocked" x="790" y="380" width="52" height="52" />
+    <rect class="cell blocked" x="842" y="380" width="52" height="52" />
+    <rect class="cell doc-b" x="894" y="380" width="52" height="52" />
+    <rect class="cell doc-b" x="946" y="380" width="52" height="52" />
+    <rect class="cell blocked" x="998" y="380" width="52" height="52" />
+    <!-- B2 -->
+    <rect class="cell blocked" x="738" y="432" width="52" height="52" />
+    <rect class="cell blocked" x="790" y="432" width="52" height="52" />
+    <rect class="cell blocked" x="842" y="432" width="52" height="52" />
+    <rect class="cell doc-b" x="894" y="432" width="52" height="52" />
+    <rect class="cell doc-b" x="946" y="432" width="52" height="52" />
+    <rect class="cell doc-b" x="998" y="432" width="52" height="52" />
+  </g>
+  <line class="divider" x1="894" y1="166" x2="894" y2="490" />
+  <line class="divider" x1="732" y1="328" x2="1056" y2="328" />
+  <g class="legend">
+    <rect class="doc-a" x="770" y="519" width="16" height="16" rx="3" />
+    <text x="795" y="532">文档 A 内可见</text>
+    <rect class="doc-b" x="918" y="519" width="16" height="16" rx="3" />
+    <text x="943" y="532">文档 B 内可见</text>
+  </g>
+
+  <text class="axis" x="600" y="620" text-anchor="middle">
+    彩色单元格表示允许 attention，灰色单元格表示被 Mask
+  </text>
+</svg>

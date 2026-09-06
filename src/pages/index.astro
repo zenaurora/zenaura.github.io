@@ -15,32 +15,51 @@ import Layout from "@/layouts/Layout.astro"
 
     <ol class="definitions">
       <li>
-        a software engineering grad student at DUT. knows a bit of Rust and TypeScript, still figuring things out.
+        a software engineering grad student at DUT. knows a bit of Rust and
+        TypeScript, still figuring things out.
       </li>
       <li>
-        (noun) someone who enjoys open-source software and tweaking dev environments more than is probably healthy.
+        (noun) someone who enjoys open-source software and tweaking dev
+        environments more than is probably healthy.
       </li>
     </ol>
     <hr>
     <prose-content>
       <p>
-        I mostly write <strong>Rust</strong>, <strong>TypeScript</strong>, and <strong>Python</strong> these days. Switched from Windows to macOS and Linux a while back, and I probably spend too much time configuring my tools instead of actually using them.
+        I mostly write <strong>Rust</strong>, <strong>TypeScript</strong>, and
+        <strong>Python</strong>
+        these days. Switched from Windows to macOS and Linux a while back, and I
+        probably spend too much time configuring my tools instead of actually
+        using them.
       </p>
       <p>
-        My lab work is mostly industry projects, which means a lot of Java and enterprise stuff. But I still read AI papers now and then: NeurIPS, CVPR, ICLR. Not because I have to, just because it's interesting even when the math goes over my head.
+        My lab work is mostly industry projects, which means a lot of Java and
+        enterprise stuff. But I still read AI papers now and then: NeurIPS,
+        CVPR, ICLR. Not because I have to, just because it's interesting even
+        when the math goes over my head.
       </p>
       <p>
-        I try to keep up with the Rust community. RFCs, edition updates, that sort of thing.
-        <a href="https://smallcultfollowing.com/babysteps/" target="_blank" rel="noopener noreferrer">Niko Matsakis</a>'
-        blog posts and
-        <a href="https://www.youtube.com/@Tsoding" target="_blank" rel="noopener noreferrer">Tsoding</a>'s
-        streams have probably taught me more about programming than most courses I've taken.
+        I try to keep up with the Rust community. RFCs, edition updates, that
+        sort of thing.
+        <a
+          href="https://smallcultfollowing.com/babysteps/"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Niko Matsakis</a
+        >' blog posts and
+        <a
+          href="https://www.youtube.com/@Tsoding"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Tsoding</a
+        >'s streams have probably taught me more about programming than most
+        courses I've taken.
       </p>
       <p>
-        Thinking about learning Go at some point. Definitely not looking forward to writing more Java than I have to.
+        Thinking about learning Go at some point. Definitely not looking forward
+        to writing more Java than I have to.
       </p>
     </prose-content>
-
 
     <article class="activity-card">
       <div class="activity-heading">
@@ -66,10 +85,18 @@ import Layout from "@/layouts/Layout.astro"
     animation: entryFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  .fade-in > *:nth-child(2) { animation-delay: 0.08s; }
-  .fade-in > *:nth-child(3) { animation-delay: 0.16s; }
-  .fade-in > *:nth-child(4) { animation-delay: 0.24s; }
-  .fade-in > *:nth-child(5) { animation-delay: 0.32s; }
+  .fade-in > *:nth-child(2) {
+    animation-delay: 0.08s;
+  }
+  .fade-in > *:nth-child(3) {
+    animation-delay: 0.16s;
+  }
+  .fade-in > *:nth-child(4) {
+    animation-delay: 0.24s;
+  }
+  .fade-in > *:nth-child(5) {
+    animation-delay: 0.32s;
+  }
 
   @keyframes entryFadeIn {
     from {
@@ -96,7 +123,7 @@ import Layout from "@/layouts/Layout.astro"
     etymology-span {
       opacity: 0.7;
       font-style: italic;
-      
+
       .part-of-speech {
         font-weight: var(--font-weight-normal);
         opacity: 0.8;
@@ -119,7 +146,9 @@ import Layout from "@/layouts/Layout.astro"
       li {
         padding-inline-start: 1.2em;
         text-indent: -1.2em;
-        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+        transition:
+          transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+          color 0.2s ease;
 
         &::before {
           content: counter(list-item);
@@ -168,7 +197,7 @@ import Layout from "@/layouts/Layout.astro"
         transition: color 0.25s ease;
 
         &::after {
-          content: '';
+          content: "";
           position: absolute;
           width: 100%;
           transform: scaleX(0);
@@ -201,7 +230,8 @@ import Layout from "@/layouts/Layout.astro"
       color-mix(in oklab, var(--foreground) 3.5%, transparent),
       color-mix(in oklab, var(--foreground) 1.5%, transparent)
     );
-    box-shadow: inset 0 1px 0 color-mix(in oklab, var(--foreground) 7%, transparent);
+    box-shadow: inset 0 1px 0
+      color-mix(in oklab, var(--foreground) 7%, transparent);
     transition: border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
     &:hover {
@@ -245,18 +275,26 @@ import Layout from "@/layouts/Layout.astro"
     display: block;
     aspect-ratio: 1;
     border-radius: 2px;
-    background: color-mix(in oklab, var(--foreground) calc(8% + var(--level) * 16%), transparent);
+    background: color-mix(
+      in oklab,
+      var(--foreground) calc(8% + var(--level) * 16%),
+      transparent
+    );
   }
 
   .activity-cells i {
     min-inline-size: 8px;
-    transition: transform 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+    transition:
+      transform 0.18s ease,
+      background-color 0.18s ease,
+      box-shadow 0.18s ease;
   }
 
   .activity-cells i:hover {
     transform: translateY(-1px) scale(1.18);
     background: var(--foreground);
-    box-shadow: 0 0 0 1px color-mix(in oklab, var(--foreground) 14%, transparent);
+    box-shadow: 0 0 0 1px
+      color-mix(in oklab, var(--foreground) 14%, transparent);
   }
 
   .activity-legend {
@@ -322,9 +360,13 @@ import Layout from "@/layouts/Layout.astro"
         })
       })
       .catch(() => {
-        document.querySelectorAll("[data-github-activity]").forEach((activityGrid) => {
-          activityGrid.closest(".activity-card")?.setAttribute("data-unavailable", "")
-        })
+        document
+          .querySelectorAll("[data-github-activity]")
+          .forEach((activityGrid) => {
+            activityGrid
+              .closest(".activity-card")
+              ?.setAttribute("data-unavailable", "")
+          })
       })
   }
 </script>
